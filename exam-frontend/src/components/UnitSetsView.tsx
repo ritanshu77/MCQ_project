@@ -1,0 +1,265 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { getAuthToken } from "@/utils/auth";
+import { toast, confirmToast } from "@/components/Toast";
+
+interface Set {
+  _id: string;
+  name: { en: string; hi: string };
+  totalQuestions: number;
+  setNumber: number;
+  isActive: boolean;
+  score?: number;
+  progress?: number;
+  status?: string;
+  totalAttempted?: number;
+  testResult?: {
+    _id: string;
+    score: number;
+    status: string;
+    correctAnswers: number;
+    totalQuestions: number;
+    isReset: boolean;
+  };
+}
+
+interface Chapter {
+  _id: string;
+  name: { hi: string; en: string };
+  code: string;
+  sets: Set[];
+}
+
+interface UnitSetsViewProps {
+  unitId: string;
+}
+
+export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
+  const router = useRouter();
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ id: string; name: string } | null>(null);
+
+  useEffect(() => {
+    // Fetch user details
+    const fetchUser = async () => {
+      try {
+        const { data } = await axios.get('/api/auth/me');
+        if (data?.success && data?.user) {
+          setUser(data.user);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    fetchSets();
+  }, [unitId, user]); // Refetch when user loads to get progress
+
+  const fetchSets = async () => {
+    try {
+      setLoading(true);
+      const token = getAuthToken();
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      const { data } = await axios.get(
+        `/api/units/${unitId}/sets`,
+        { 
+            withCredentials: true,
+            headers
+        }
+      );
+      
+      if (data?.success && data?.data?.chapters) {
+        setChapters(data.data.chapters);
+      }
+    } catch (error) {
+      console.error('Sets fetch error:', error);
+      setChapters([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = async (e: React.MouseEvent, setId: string) => {
+    e.stopPropagation();
+    if (!user) return;
+    
+    confirmToast('Are you sure you want to reset your progress?', async () => {
+        try {
+            const token = getAuthToken();
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            await axios.post('/api/attempts/reset', 
+                { userId: user.id, questionSetId: setId },
+                { headers }
+            );
+            fetchSets(); // Refresh to update UI
+            toast('Progress reset successfully', 'success');
+        } catch (err) {
+            console.error('Reset error:', err);
+            toast('Failed to reset', 'error');
+        }
+    });
+  };
+
+  return (
+    <div>
+      <style jsx>{`
+      .main-content{
+      margin:0px,
+      padding:0px,
+      }
+        .back-btn { 
+          display: inline-flex; align-items: center; gap: 8px; 
+          padding: 12px 24px; background: white; border: 2px solid var(--primary-blue); 
+          border-radius: 10px; color: var(--primary-blue); font-weight: 600; cursor: pointer;
+          transition: all 0.3s; margin-bottom: 30px; font-size: 14px;
+        }
+        .back-btn:hover { background: var(--primary-blue); color: white; transform: translateY(-1px); }
+        .header h1 { font-size: 28px; font-weight: bold; color: var(--primary-blue); margin: 0 0 8px 0; }
+        .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        .set-card { 
+          background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+          border-left: 5px solid #ff9800; cursor: pointer; transition: all 0.3s;
+          position: relative; overflow: hidden;
+        }
+        .set-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
+        .empty-state { text-align: center; padding: 80px 40px; color: #666; }
+        .loading { text-align: center; padding: 60px 20px; color: #666; }
+        .progress-badge {
+            position: absolute; top: 10px; right: 10px; 
+            background: #e0f2f1; color: #00695c; padding: 2px 6px; 
+            border-radius: 20px; font-size: 10px; font-weight: bold;
+        }
+        .reset-btn {
+            padding: 2px 6px;
+            font-size: 10px;
+            background: #ef5350;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-left: 8px;
+        }
+        .reset-btn:hover { background: #d32f2f; }
+      `}</style>
+
+      <button onClick={() => router.back()} className="back-btn">
+         Back
+      </button>
+
+      <div className="header">
+        <h1>{chapters.length > 0 ? 'Chapters & Sets' : 'Unit Sets'}</h1>
+        <p style={{ color: "#666", fontSize: 14, margin: 5 }}>
+          {loading ? "Loading..." : `${chapters.length} chapters available`}
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="loading">
+          <div style={{ fontSize: 16 }}>Loading sets...</div>
+        </div>
+      ) : chapters.length === 0 ? (
+        <div className="empty-state">
+          <div style={{ fontSize: 48, marginBottom: 20 }}></div>
+          <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 12 }}>
+            No Sets Available
+          </h2>
+          <p style={{ fontSize: 16 }}>
+            Is unit mein abhi koi sets nahi hain.
+          </p>
+        </div>
+      ) : (
+        <div className="chapters-container">
+          {chapters.map((chapter) => (
+            <div key={chapter._id} className="chapter-section" style={{ marginBottom: 40 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 15, borderBottom: '2px solid #eee', paddingBottom: 10 }}>
+                {chapter.name.en} <span style={{ fontSize: 16, color: '#666', fontWeight: 'normal' }}>({chapter.name.hi})</span>
+              </h2>
+              
+              <div className="sets-grid">
+                {chapter.sets.map((set) => (
+                  <div 
+                    key={set._id} 
+                    className="set-card"
+                    onClick={() => {
+                      try { localStorage.removeItem(`quiz_exited_${set._id}`); } catch {}
+                      router.push(`/dashboard/units/${unitId}/sets/${set._id}`);
+                    }}
+                  >
+                    {!set.isActive && (
+                      <span className="progress-badge" style={{ background: '#ffebee', color: '#c62828' }}>
+                         Inactive
+                      </span>
+                    )}
+                    
+                    <h3 style={{ 
+                      fontSize: 18, 
+                      fontWeight: "bold", 
+                      marginBottom: 8,
+                      color: "#1f2937",
+                      paddingRight: '60px'
+                    }}>
+                      {set.name?.en || set.name?.hi || `Set ${set.setNumber}`}
+                    </h3>
+                    
+                    <p style={{ 
+                      fontSize: 24, 
+                      color: "var(--primary-blue)", 
+                      fontWeight: "bold", 
+                      margin: "0 0 8px 0" 
+                    }}>
+                      {set.totalQuestions} Questions
+                    </p>
+                    
+                    {/* Progress & Score */}
+                    <div style={{ marginTop: '8px' }}>
+                        {(set.progress !== undefined && set.progress > 0) && (
+                           <div style={{ 
+                               display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' 
+                           }}>
+                               <span>Score: </span>
+                               <span style={{ color: (set.score || 0) >= 0 ? 'var(--primary-blue)' : 'red' }}>
+                                   {(set.score || 0).toFixed(2)}
+                               </span>
+                           </div>
+                        )}
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                           <div style={{ flex: 1, height: '4px', background: '#eee', borderRadius: '2px', overflow: 'hidden' }}>
+                              {(set.score || 0) !== 0 && (
+                                <div style={{ 
+                                    width: `${Math.min((Math.abs(set.score || 0) / (set.totalQuestions || 1)) * 100, 100)}%`, 
+                                    height: '100%', 
+                                    background: (set.score || 0) >= 0 ? 'var(--primary-blue)' : 'red' 
+                                }}></div>
+                              )}
+                           </div>
+                           {/* Reset Button - Show if testResult exists and status is NOT 'not_started' */}
+                           {set.testResult && set.testResult.status !== 'not_started' && (
+                               <button 
+                                  className="reset-btn"
+                                  onClick={(e) => handleReset(e, set._id)}
+                                  title="Reset Quiz"
+                               >
+                                  Reset
+                               </button>
+                           )}
+                        </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
