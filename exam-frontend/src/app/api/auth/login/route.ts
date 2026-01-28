@@ -31,14 +31,14 @@ export async function POST(req: Request) {
     const response = NextResponse.json(data);
     
     // FIXED: 24 HOURS EXPIRY + BROWSER CLOSE SAFE
-    // NOTE: secure is set to false to allow testing on HTTP IP addresses
+    // NOTE: secure is true in production for HTTPS
     if (token) {
       console.log("Setting token cookie...");
       response.cookies.set("token", token, {
         httpOnly: false,
         path: "/",
         sameSite: "lax",
-        secure: false, // process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
         maxAge: 600 * 60 * 60,           // 24 hours
         expires: new Date(Date.now() + 600 * 60 * 60 * 1000),  // 24 hours
       });
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       response.cookies.set("id", String(userId), {
         path: "/",
         sameSite: "lax",
-        secure: false, // process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
         maxAge: 600 * 60 * 60,           // 24 hours
         expires: new Date(Date.now() + 600 * 60 * 60 * 1000),  // 24 hours
       });

@@ -30,13 +30,13 @@ export async function POST(req: Request) {
     const response = NextResponse.json(data);
     
     // FIXED: 24 HOURS EXPIRY (same as login)
-    // NOTE: secure is set to false to allow testing on HTTP IP addresses
+    // NOTE: secure is true in production for HTTPS
     if (newToken) {
       response.cookies.set("token", newToken, {
         httpOnly: false,
         path: "/",
         sameSite: "lax",
-        secure: false, // process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
         maxAge: 600 * 60 * 60,           // 24 hours
         expires: new Date(Date.now() + 600 * 60 * 60 * 1000),  // 24 hours
       });
