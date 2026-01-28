@@ -29,27 +29,25 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
       useFactory: async (configService: ConfigService) => {
         const baseUri = configService.get<string>('database.uri')!;
         const dbName = configService.get<string>('database.dbName')!;
-        const fullUri = `${baseUri}/${dbName}`;
-
-        //  Console logs - DB details
+        
+        // Console logs - DB details
         console.log(' MongoDB Base URI:', baseUri);
         console.log(' Database Name:', dbName);
-        console.log(' Full Connection URI:', fullUri);
 
         return {
-          uri: fullUri,
+          uri: baseUri,
+          dbName: dbName, // Explicitly pass dbName to Mongoose options
           connectionName: configService.get<string>('database.connectionName'),
           connectionFactory: (connection: any) => {
             if (connection.readyState === 1) {
-              console.log('MONGODB IS COONECT ' + fullUri);
+              console.log('MONGODB IS CONNECTED');
             }
             connection.on('connected', () => {
-              console.log('MONGODB IS COONECT ' + fullUri);
+              console.log('MONGODB IS CONNECTED');
             });
             console.log(' MongoDB Connected!');
-            console.log(' DB Name:', connection.db.databaseName);
+            console.log(' DB Name:', connection.db ? connection.db.databaseName : 'Unknown');
             console.log(' Host:', connection.host);
-            console.log(' Full URI Used:', fullUri);
             return connection;
           },
         };
