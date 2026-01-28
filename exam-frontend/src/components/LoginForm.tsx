@@ -1,12 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "./Toast";
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 export default function LoginForm() {
   const [input, setInput] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [visitorId, setVisitorId] = useState<string>("");
+
+  useEffect(() => {
+    const initFingerprint = async () => {
+      try {
+        const fp = await FingerprintJS.load();
+        const { visitorId } = await fp.get();
+        setVisitorId(visitorId);
+      } catch (error) {
+        console.error("Fingerprint error:", error);
+        // Fallback to random ID if fingerprint fails
+        const fallbackId = `fallback_${Math.random().toString(36).slice(2)}`;
+        setVisitorId(fallbackId);
+      }
+    };
+    initFingerprint();
+  }, []);
 
   useEffect(() => {
     const val = input.trim();
@@ -17,20 +35,6 @@ export default function LoginForm() {
     setNameError(null);
   }, [input]);
 
-  const deviceFingerprint = useMemo(() => {
-    try {
-      const stored = localStorage.getItem("device_fingerprint");
-      if (stored) return stored;
-      const fp = typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? (crypto as any).randomUUID()
-        : `dev_${Math.random().toString(36).slice(2, 12)}`;
-      localStorage.setItem("device_fingerprint", fp);
-      return fp;
-    } catch {
-      return `dev_${Math.random().toString(36).slice(2, 12)}`;
-    }
-  }, []);
-
   async function handleLogin(e?: React.FormEvent) {
     e?.preventDefault();
     setLoading(true);
@@ -38,8 +42,8 @@ export default function LoginForm() {
     try {
       const payload = {
         name: input.trim(),
-        deviceId: deviceFingerprint,
-        browserId: "web",
+        deviceId: visitorId || `unknown_${Date.now()}`,
+        browserId: visitorId || "web",
         systemInfo: navigator.platform || "",
         userAgent: navigator.userAgent,
         email: null,
