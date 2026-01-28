@@ -1,4 +1,4 @@
-﻿import { NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -68,7 +68,8 @@ async function bootstrap() {
   });
 
   //  CRITICAL: Bind to 0.0.0.0 for Render
-  const port = process.env.PORT || 3001;
+  //  Use BACKEND_PORT if set (for monorepo setup), otherwise fallback to PORT (for standalone) or 3001
+  const port = process.env.BACKEND_PORT || process.env.PORT || 3001;
   
   await app.listen(port, '0.0.0.0', () => {
     console.log(` Server running on port: ${port}`);
