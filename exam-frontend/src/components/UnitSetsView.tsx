@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { getAuthToken } from "@/utils/auth";
@@ -43,7 +43,13 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ id: string; name: string } | null>(null);
 
+  const didFetchUserRef = useRef(false);
+
   useEffect(() => {
+    // Prevent double fetch in Strict Mode
+    if (didFetchUserRef.current) return;
+    didFetchUserRef.current = true;
+
     // Fetch user details
     const fetchUser = async () => {
       try {
@@ -59,10 +65,12 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
   }, []);
 
   useEffect(() => {
-    fetchSets();
+    const controller = new AbortController();
+    fetchSets(controller.signal);
+    return () => controller.abort();
   }, [unitId, user]); // Refetch when user loads to get progress
 
-  const fetchSets = async () => {
+  const fetchSets = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       const token = getAuthToken();
@@ -72,18 +80,35 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
         `/api/units/${unitId}/sets`,
         { 
             withCredentials: true,
-            headers
+            headers,
+            signal // Pass signal to axios
         }
       );
       
       if (data?.success && data?.data?.chapters) {
         setChapters(data.data.chapters);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (axios.isCancel(error)) {
+        console.log('Request canceled', error.message);
+        return;
+      }
       console.error('Sets fetch error:', error);
       setChapters([]);
     } finally {
-      setLoading(false);
+        // Only turn off loading if not cancelled (to avoid flickering if a new request is pending? 
+        // actually if cancelled, the new request will handle loading state)
+        // But we need to be careful. If request A is cancelled by B, B is already running. 
+        // B set loading=true. A finishes (cancelled). A sets loading=false? NO.
+        // We should check signal before setting loading false? 
+        // Or better: rely on the fact that if cancelled, we return early? 
+        // Wait, 'finally' runs even if cancelled/returned? Yes.
+        // So we need to check cancellation in finally or avoid finally if possible for loading state?
+        // Actually, if we use a ref to track "current request", we can check it.
+        // But simply:
+        if (!signal?.aborted) {
+             setLoading(false);
+        }
     }
   };
 

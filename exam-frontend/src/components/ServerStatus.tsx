@@ -7,6 +7,7 @@ let globalIsChecking = false;
 
 export default function ServerStatus() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const [isSleeping, setIsSleeping] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
@@ -14,6 +15,7 @@ export default function ServerStatus() {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (pollingRef.current) clearInterval(pollingRef.current);
     };
   }, []);
 
@@ -42,40 +44,56 @@ export default function ServerStatus() {
 
   const startCountdown = () => {
     if (timerRef.current) clearInterval(timerRef.current);
+    if (pollingRef.current) clearInterval(pollingRef.current);
     
     setIsSleeping(true);
-    setCountdown(40); // Start 25s countdown (changed to 40 in previous edit, reverting to 25 if needed or keeping 40 as per last file content)
+    setCountdown(40);
 
+    // Visual countdown
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
-          checkAgain();
+          // When countdown ends, we rely on the polling to have fixed it, 
+          // or we restart the visual countdown if still down.
+          // But actually, if polling is running, we can just restart countdown for visuals.
+          checkAgain(true); 
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
+
+    // Silent background polling every 3 seconds
+    pollingRef.current = setInterval(() => {
+        checkAgain(false); // Silent check
+    }, 3000);
   };
 
-  const checkAgain = async () => {
-    // Prevent overlapping checks
-    if (globalIsChecking) return;
-    globalIsChecking = true;
-
+  const checkAgain = async (restartCountdownIfFailed = false) => {
+    // If we are already checking via another trigger, skip? 
+    // Actually, we want to allow parallel checks if one is stuck, 
+    // but typically we should avoid spam.
+    // We'll skip global lock for silent polling to ensure we don't get blocked by a long pending request
+    
     try {
       const res = await fetch('/api/health');
       if (res.ok) {
         setIsSleeping(false);
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        // Only show toast if it was sleeping
         toast("Backend Server is Connected! 🚀", "success");
       } else {
-        // Still sleeping, restart countdown
-        startCountdown();
+        // Still sleeping
+        if (restartCountdownIfFailed) {
+             startCountdown();
+        }
       }
     } catch (e) {
-      startCountdown();
-    } finally {
-      globalIsChecking = false;
+        if (restartCountdownIfFailed) {
+            startCountdown();
+       }
     }
   };
 

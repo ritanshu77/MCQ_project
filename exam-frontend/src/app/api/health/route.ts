@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 // Store state outside to persist across requests (in memory)
 let lastCheckTime = 0;
 let lastStatus = 503; // Default to 'SLEEPING'
-const CHECK_INTERVAL = 25000; // 25 seconds
+const CHECK_INTERVAL = 2000; // 2 seconds
 
 export async function GET() {
   const now = Date.now();
