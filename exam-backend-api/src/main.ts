@@ -67,9 +67,9 @@ async function bootstrap() {
     });
   });
 
-  //  CRITICAL: Bind to 0.0.0.0 for Render
-  //  Use BACKEND_PORT if set (for monorepo setup), otherwise fallback to PORT (for standalone) or 3001
-  const port = process.env.BACKEND_PORT || process.env.PORT || 3001;
+  // IMPORTANT: Backend must NOT use the main 'PORT' variable in cloud because Frontend uses it.
+  // We force Backend to run on 3001 (or specific BACKEND_PORT) internally.
+  const port = process.env.BACKEND_PORT || 3001;
   
   await app.listen(port, '0.0.0.0', () => {
     console.log(` Server running on port: ${port}`);

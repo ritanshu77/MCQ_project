@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "install:all": "npm install concurrently && cd exam-frontend && npm install && cd ../exam-backend-api && npm install",
+    "postinstall": "cd exam-frontend && npm install && cd ../exam-backend-api && npm install",
     "dev": "npx concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "cd exam-frontend && npm run dev",
     "dev:backend": "cd exam-backend-api && npm run start:dev",
