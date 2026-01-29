@@ -203,7 +203,7 @@ export default function DashboardShell({ user }: { user: User }) {
       `}</style>
 
       <div className="welcome-msg">
-        <h1>Welcome, {user?.name?.en ?? user?.name?.hi ?? "Guest"}! 👋</h1>
+        <h1>Welcome, {typeof user?.name === 'string' ? user.name : (user?.name?.en ?? user?.name?.hi ?? "Guest")}! 👋</h1>
         <p style={{ fontSize: 14, margin: "5px 0", color: "#666" }}>
           Select your preferred way to practice:
         </p>

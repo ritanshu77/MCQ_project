@@ -118,4 +118,33 @@ export class AuthController {
       };
     }
   }
+
+  /**
+   * Update User Profile
+   * PUT /auth/profile
+   */
+  @Post('profile') // Using Post for simplicity or PUT
+  @HttpCode(HttpStatus.OK)
+  async updateProfile(@Body() body: { userId: string; name: string; mobile: string; gmail: string }) {
+    try {
+      if (!body.userId) throw new Error('User ID is required');
+      
+      const updatedUser = await this.authService.updateProfile(body.userId, {
+        name: body.name,
+        mobile: body.mobile,
+        gmail: body.gmail
+      });
+      
+      return {
+        success: true,
+        message: 'Profile updated successfully',
+        user: updatedUser
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Profile update failed',
+      };
+    }
+  }
 }

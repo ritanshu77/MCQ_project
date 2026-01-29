@@ -36,6 +36,9 @@ export default function Sidebar() {
       >
         📊 Performance
       </a>
+      <Link href="/dashboard/profile" className="nav-link" onClick={closeSidebar}>
+        👤 Profile
+      </Link>
       <a
         href="#"
         className="nav-link"

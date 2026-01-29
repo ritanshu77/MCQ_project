@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         user: {
             id: user.id || user._id,
             name: user.name,
-            email: user.email,
+            email: user.gmail || user.email, // Map gmail to email
             mobile: user.mobile
         } 
     });

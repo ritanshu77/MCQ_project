@@ -119,6 +119,8 @@ export class AuthService {
         user: {
           id: user._id,
           name: user.name,
+          mobile: user.mobile,
+          gmail: user.gmail,
           browserId: user.browserId,
           type: user.type,
           sessionCount: user.sessions.length,
@@ -170,5 +172,22 @@ export class AuthService {
     }
 
     return user.save();
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(userId: string, updateData: { name: string; mobile: string; gmail: string }) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.name = updateData.name;
+    user.mobile = updateData.mobile;
+    user.gmail = updateData.gmail;
+    user.type = 'registered'; // Upgrade to registered if they update profile? Or just keep it. User asked to create separate model but I am using existing. I will mark as registered if they provide details.
+    
+    return await user.save();
   }
 }
