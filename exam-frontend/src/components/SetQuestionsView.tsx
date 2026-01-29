@@ -418,7 +418,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                 
                 @media (max-width: 992px) {
                     .toggle-btn { display: block; }
-                    .wrapper { flex-direction: column; padding: 8px; gap: 8px; }
+                    .wrapper { flex-direction: column; padding: 0px; gap: 8px; }
                     .main-content { width: 100%; max-width: none; margin: 0; }
                     .sidebar { 
                         position: fixed; 
