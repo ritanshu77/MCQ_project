@@ -5,6 +5,7 @@ import { Question } from './question.schema';
 import { Chapter } from './chapter.schema';
 import { Title } from './title.schema';
 import { Unit } from './unit.schema';
+import { Exam } from './exam.schema';
 
 class StatsSchema {
   @Prop({ type: Number, default: 0 })
@@ -18,6 +19,9 @@ class StatsSchema {
 export class QuestionSet {
   @Prop({ type: Types.ObjectId, ref: Title.name, required: false, index: true })
   titleId: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Exam.name, required: false, index: true })
+  examId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: Unit.name, required: false, index: true })
   unitId: Types.ObjectId; // ✅ NEW - "DBMS500"

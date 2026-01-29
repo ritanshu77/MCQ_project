@@ -240,26 +240,40 @@ export class QuestionsService {
     );
     results.created = insertedQuestions.length;
 
-    // 6. Auto-create QuestionSets (ONLY if titleId exists)
-    if (insertedQuestions.length > 0 && titleId) {
-      // ⭐ titleId check
+    // 6. Auto-create QuestionSets (Title & Exam)
+    if (insertedQuestions.length > 0) {
       const chapterQuestions = insertedQuestions.reduce(
         (acc: { [key: string]: QuestionDocument[] }, q) => {
-          const chId = q.chapterId!.toString();
-          if (!acc[chId]) acc[chId] = [];
-          acc[chId].push(q);
+          if (q.chapterId) {
+            const chId = q.chapterId.toString();
+            if (!acc[chId]) acc[chId] = [];
+            acc[chId].push(q);
+          }
           return acc;
         },
         {} as { [key: string]: QuestionDocument[] },
       );
 
-      for (const [chapterIdStr, questions] of Object.entries(
-        chapterQuestions,
-      )) {
+      for (const [chapterIdStr, questions] of Object.entries(chapterQuestions)) {
+        // Create Title Sets
+        if (titleId) {
+          await this.createQuestionSets(titleId, 'title', questions);
+          results.setsCreated++;
+        }
+        
+        // Create Exam Sets
+        if (examId) {
+           await this.createQuestionSets(examId, 'exam', questions);
+           results.setsCreated++;
+        }
+
+        // Create Chapter Sets
         const chapterId = new Types.ObjectId(chapterIdStr);
-        await this.createQuestionSets(titleId, chapterId, questions); // ✅ SAFE!
+        if (chapterId) {
+          await this.createQuestionSets(chapterId, 'chapter', questions);
+          results.setsCreated++;
+        }
       }
-      results.setsCreated = Object.keys(chapterQuestions).length;
     }
 
     this.logger.log(
@@ -273,49 +287,65 @@ export class QuestionsService {
     };
   }
 
-  //    private async createQuestionSets(titleId: Types.ObjectId, questions: QuestionDocument[]) {
   private async createQuestionSets(
-    titleId: Types.ObjectId,
-    chapterId: Types.ObjectId,
+    parentId: Types.ObjectId,
+    parentType: 'title' | 'exam' | 'chapter',
     questions: QuestionDocument[],
   ) {
-    const questionsPerSet = 100;
+    // ⭐ LOGIC: Title/Chapter = 100 limit, Exam = Unlimited
+    const questionsPerSet = parentType === 'exam' ? 10000 : 100;
+    
+    let parentField = 'titleId';
+    if (parentType === 'exam') parentField = 'examId';
+    if (parentType === 'chapter') parentField = 'chapterId';
 
     console.log(
-      `🎯 TITLE ${titleId}: Processing ${questions.length} new questions`,
+      `🎯 ${parentType.toUpperCase()} ${parentId}: Processing ${questions.length} new questions`,
     );
 
-    // 1. Find INCOMPLETE set first
-    const incompleteSet = await this.questionSetModel
-      .findOne({
-        titleId,
-        isActive: false,
-      })
-      .sort({ setNumber: -1 });
+    // 1. Find TARGET set (Incomplete for Title/Chapter, ANY Latest for Exam)
+    const query: any = {
+      [parentField]: parentId,
+      quizType: parentType,
+    };
 
-    if (incompleteSet && questions.length > 0) {
-      const currentCount = incompleteSet.questionIds.length; // 95
-      const needed = questionsPerSet - currentCount; // 5
-      const available = questions.length; // 120
-
-      console.log(
-        `🔄 Set ${incompleteSet.setNumber}: ${currentCount}/${questionsPerSet} → Need ${needed}`,
-      );
-
-      // Complete incomplete set (5 slots fill)
-      const questionsToAdd = questions.slice(0, needed).map((q) => q._id); // First 5Q
-      incompleteSet.questionIds.push(...questionsToAdd);
-      incompleteSet.totalQuestions = questionsPerSet;
-      incompleteSet.isActive = true;
-      await incompleteSet.save();
-
-      console.log(`✅ Set ${incompleteSet.setNumber} COMPLETED! 100/100`);
-
-      // Remove used 5 questions (120 - 5 = 115 remaining)
-      questions = questions.slice(needed);
+    // For Titles/Chapters, we only want to fill INCOMPLETE sets.
+    // For Exams, we want to fill the LATEST set regardless of status (Unlimited sets).
+    if (parentType !== 'exam') {
+      query.isActive = false;
     }
 
-    // 2. NEW SETS with remaining 115 questions
+    const targetSet = await this.questionSetModel
+      .findOne(query)
+      .sort({ setNumber: -1 });
+
+    if (targetSet && questions.length > 0) {
+      const currentCount = targetSet.questionIds.length;
+      const needed = questionsPerSet - currentCount;
+
+      if (needed > 0) {
+        console.log(
+          `🔄 Set ${targetSet.setNumber}: ${currentCount}/${questionsPerSet} → Adding...`,
+        );
+
+        // Fill/Append to set
+        const questionsToAdd = questions.slice(0, needed).map((q) => q._id);
+        targetSet.questionIds.push(...questionsToAdd);
+        targetSet.totalQuestions = targetSet.questionIds.length;
+        
+        // Update Active Status
+        targetSet.isActive = parentType === 'exam' ? true : targetSet.totalQuestions >= questionsPerSet;
+        
+        await targetSet.save();
+
+        console.log(`✅ Set ${targetSet.setNumber} UPDATED! ${targetSet.totalQuestions} Questions`);
+
+        // Remove used questions
+        questions = questions.slice(needed);
+      }
+    }
+
+    // 2. NEW SETS with remaining questions
     if (questions.length > 0) {
       console.log(`➕ Remaining ${questions.length}Q → Creating new sets`);
 
@@ -325,22 +355,24 @@ export class QuestionsService {
         const setQuestions = shuffledQuestions.slice(i, i + questionsPerSet);
 
         const lastSet = await this.questionSetModel
-          .findOne({ titleId })
+          .findOne({ [parentField]: parentId, quizType: parentType })
           .sort({ setNumber: -1 });
         const setNumber = (lastSet?.setNumber || 0) + 1;
 
+        const isActive = parentType === 'exam' ? true : setQuestions.length === 100;
+
         await this.questionSetModel.create({
-          titleId,
+          [parentField]: parentId,
           name: { hi: `सेट ${setNumber}`, en: `Set ${setNumber}` },
           questionIds: setQuestions.map((q) => q._id),
           totalQuestions: setQuestions.length,
           setNumber,
-          quizType: 'title',
-          isActive: setQuestions.length === 100,
+          quizType: parentType,
+          isActive,
         });
 
         console.log(
-          `✅ Set ${setNumber}: ${setQuestions.length}Q ${setQuestions.length === 100 ? '(ACTIVE)' : '(PENDING)'}`,
+          `✅ Set ${setNumber}: ${setQuestions.length}Q ${isActive ? '(ACTIVE)' : '(PENDING)'}`,
         );
       }
     }
@@ -429,7 +461,7 @@ export class QuestionsService {
 
     return this.questionSetModel
       .find(query)
-      .populate('titleId chapterId')
+      .populate('titleId chapterId examId')
       .sort({ setNumber: 1 })
       .exec();
   }
