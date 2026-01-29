@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import axios from 'axios';
@@ -290,6 +290,27 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
             correct,
             wrong
         };
+    };
+
+    const handleExit = () => {
+        if (isExiting.current) return;
+        isExiting.current = true;
+        
+        // Save current progress before exiting? 
+        // Maybe optional, but let's just go back for now.
+        // If we want to save state on exit without submitting, we'd need an API for that.
+        // Currently we only save on submit or next/prev (if implemented).
+        
+        // Actually, we should probably mark "exited" in local storage so we don't auto-restore next time?
+        // Or just keep it.
+        
+        localStorage.setItem(`quiz_exited_${setId}`, 'true');
+
+        if (backPath) {
+            router.push(backPath);
+        } else {
+            router.push(`/dashboard/units/${unitId}/sets`);
+        }
     };
 
     if (loading) {

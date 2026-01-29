@@ -70,21 +70,21 @@ export default function UnitsView({
     <div>
       <style jsx>{`
         .back-btn { 
-          display: inline-flex; align-items: center; gap: 8px; 
-          padding: 12px 24px; background: white; border: 2px solid var(--primary-blue); 
-          border-radius: 10px; color: var(--primary-blue); font-weight: 600; cursor: pointer;
-          transition: all 0.3s; margin-bottom: 30px; font-size: 14px;
+          display: inline-flex; align-items: center; gap: 4px; 
+          padding: 6px 12px; background: white; border: 2px solid var(--primary-blue); 
+          border-radius: 8px; color: var(--primary-blue); font-weight: 600; cursor: pointer;
+          transition: all 0.3s; margin-bottom: 12px; font-size: 12px;
         }
         .back-btn:hover { background: var(--primary-blue); color: white; transform: translateY(-1px); }
-        .header h1 { font-size: 28px; font-weight: bold; color: var(--primary-blue); margin: 0 0 8px 0; }
-        .units-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
+        .units-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
         .unit-card { 
-          background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-          border-left: 5px solid #10b981; cursor: pointer; transition: all 0.3s;
+          background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+          border-left: 4px solid #10b981; cursor: pointer; transition: all 0.3s;
         }
-        .unit-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
-        .empty-state { text-align: center; padding: 80px 40px; color: #666; }
-        .loading { text-align: center; padding: 60px 20px; color: #666; }
+        .unit-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .empty-state { text-align: center; padding: 40px 20px; color: #666; }
+        .loading { text-align: center; padding: 40px 20px; color: #666; }
       `}</style>
 
       <button onClick={onBack} className="back-btn">
@@ -93,7 +93,7 @@ export default function UnitsView({
 
       <div className="header">
         <h1>Units - {subjectName}</h1>
-        <p style={{ color: "#666", fontSize: 14, margin: 5 }}>
+        <p style={{ color: "#666", fontSize: 13, margin: "0 0 10px 0" }}>
           {loading ? "Loading..." : `${units.length} units available`}
         </p>
       </div>
@@ -127,32 +127,32 @@ export default function UnitsView({
             >
               {/* ✅ FIXED: Object name handling */}
               <h3 style={{ 
-                fontSize: 20, 
+                fontSize: 16, 
                 fontWeight: "bold", 
-                marginBottom: 12,
+                marginBottom: 6,
                 color: "#1f2937"
               }}>
                 {unit.name?.en || unit.name?.hi || 'Unit'}
               </h3>
               
               <p style={{ 
-                fontSize: 28, 
+                fontSize: 22, 
                 color: "var(--primary-blue)", 
                 fontWeight: "bold", 
-                margin: "0 0 12px 0" 
+                margin: "0 0 8px 0" 
               }}>
                 {unit.totalQuestions.toLocaleString()} Questions
               </p>
               
               {/* ✅ Difficulty breakdown */}
               {unit.easy !== undefined && (
-                <p style={{ fontSize: 14, color: "#10b981", marginBottom: 4 }}>
+                <p style={{ fontSize: 12, color: "#10b981", marginBottom: 2 }}>
                   {unit.easy} Easy • {unit.medium} Medium • {unit.hard} Hard
                 </p>
               )}
               
               {unit.chapterCount && (
-                <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>
+                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
                   {unit.chapterCount} Chapters
                 </p>
               )}

@@ -161,36 +161,36 @@ export default function DashboardShell({ user }: { user: User }) {
   return (
     <div>
       <style>{`
-        .welcome-msg { margin-bottom: 25px; }
-        .welcome-msg h1 { margin: 0; color: var(--primary-blue); font-size: 1.6rem; }
+        .welcome-msg { margin-bottom: 15px; }
+        .welcome-msg h1 { margin: 0; color: var(--primary-blue); font-size: 1.4rem; }
         .stats-grid { 
           display: grid; 
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-          gap: 15px; 
-          margin-bottom: 25px; 
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+          gap: 10px; 
+          margin-bottom: 15px; 
           width: 100%; 
         }
         .stat-card { 
           background: white; 
-          padding: 20px; 
-          border-radius: 10px; 
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-          border-left: 5px solid var(--primary-blue);
+          padding: 15px; 
+          border-radius: 8px; 
+          box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+          border-left: 4px solid var(--primary-blue);
           transition: transform 0.2s;
           text-decoration: none;
           display: block;
           position: relative;
         }
         .stat-card:hover { transform: translateY(-2px); }
-        .stat-title { font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 600; }
-        .stat-value { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
-        .stat-desc { font-size: 12px; color: #888; }
-        .loading { text-align: center; padding: 40px; color: #666; }
+        .stat-title { font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 600; }
+        .stat-value { font-size: 20px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
+        .stat-desc { font-size: 11px; color: #888; }
+        .loading { text-align: center; padding: 30px; color: #666; }
         
         /* Tabs */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
         .tab-btn {
-            background: none; border: none; padding: 8px 16px; font-size: 14px; cursor: pointer;
+            background: none; border: none; padding: 6px 12px; font-size: 13px; cursor: pointer;
             border-radius: 6px; color: #666; font-weight: 500;
         }
         .tab-btn.active { background: var(--primary-blue); color: white; }

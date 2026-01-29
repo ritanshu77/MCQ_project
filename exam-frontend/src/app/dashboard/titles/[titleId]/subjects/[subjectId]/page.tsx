@@ -76,7 +76,7 @@ export default function TitleSubjectUnitsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 min-h-screen bg-gradient-to-br from-slate-50 to-blue-100">
+    <div className="max-w-6xl mx-auto p-2 min-h-screen bg-gradient-to-br from-slate-50 to-blue-100">
       <UnitsView
         subjectId={subjectId}
         subjectName={subjectName}

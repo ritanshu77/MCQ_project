@@ -82,7 +82,7 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
       // Assuming parent passes titleId or we extract it from URL if possible.
       // But for now, let's look at URL parameters since this component is likely on a page with params
       const currentUrl = new URL(window.location.href);
-      let titleId = currentUrl.pathname.split('/titles/')[1]?.split('/')[0];
+      let titleId: string | undefined = currentUrl.pathname.split('/titles/')[1]?.split('/')[0];
 
       // Fallback to query params if not found in path
       if (!titleId && searchParams) {
@@ -155,27 +155,27 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
   return (
     <div>
       <style jsx>{`
-      .main-content{
-      margin:0px,
-      padding:0px,
+      .main-content {
+        margin: 0px;
+        padding: 0px;
       }
         .back-btn { 
-          display: inline-flex; align-items: center; gap: 8px; 
-          padding: 12px 24px; background: white; border: 2px solid var(--primary-blue); 
-          border-radius: 10px; color: var(--primary-blue); font-weight: 600; cursor: pointer;
-          transition: all 0.3s; margin-bottom: 30px; font-size: 14px;
+          display: inline-flex; align-items: center; gap: 4px; 
+          padding: 6px 12px; background: white; border: 2px solid var(--primary-blue); 
+          border-radius: 8px; color: var(--primary-blue); font-weight: 600; cursor: pointer;
+          transition: all 0.3s; margin-bottom: 8px; font-size: 12px;
         }
         .back-btn:hover { background: var(--primary-blue); color: white; transform: translateY(-1px); }
-        .header h1 { font-size: 28px; font-weight: bold; color: var(--primary-blue); margin: 0 0 8px 0; }
-        .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
+        .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
         .set-card { 
-          background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-          border-left: 5px solid #ff9800; cursor: pointer; transition: all 0.3s;
+          background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
+          border-left: 4px solid #ff9800; cursor: pointer; transition: all 0.3s;
           position: relative; overflow: hidden;
         }
-        .set-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
-        .empty-state { text-align: center; padding: 80px 40px; color: #666; }
-        .loading { text-align: center; padding: 60px 20px; color: #666; }
+        .set-card:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.12); }
+        .empty-state { text-align: center; padding: 40px 20px; color: #666; }
+        .loading { text-align: center; padding: 40px 20px; color: #666; }
         .progress-badge {
             position: absolute; top: 10px; right: 10px; 
             background: #e0f2f1; color: #00695c; padding: 2px 6px; 
@@ -201,7 +201,7 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
 
       <div className="header">
         <h1>{chapters.length > 0 ? 'Chapters & Sets' : 'Unit Sets'}</h1>
-        <p style={{ color: "#666", fontSize: 14, margin: 5 }}>
+        <p style={{ color: "#666", fontSize: 13, margin: "0 0 10px 0" }}>
           {loading ? "Loading..." : `${chapters.length} chapters available`}
         </p>
       </div>
@@ -212,20 +212,20 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
         </div>
       ) : chapters.length === 0 ? (
         <div className="empty-state">
-          <div style={{ fontSize: 48, marginBottom: 20 }}></div>
-          <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 12 }}>
+          <div style={{ fontSize: 48, marginBottom: 10 }}></div>
+          <h2 style={{ fontSize: 20, fontWeight: "bold", marginBottom: 8 }}>
             No Sets Available
           </h2>
-          <p style={{ fontSize: 16 }}>
+          <p style={{ fontSize: 14 }}>
             Is unit mein abhi koi sets nahi hain.
           </p>
         </div>
       ) : (
         <div className="chapters-container">
           {chapters.map((chapter) => (
-            <div key={chapter._id} className="chapter-section" style={{ marginBottom: 40 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 15, borderBottom: '2px solid #eee', paddingBottom: 10 }}>
-                {chapter.name.en} <span style={{ fontSize: 16, color: '#666', fontWeight: 'normal' }}>({chapter.name.hi})</span>
+            <div key={chapter._id} className="chapter-section" style={{ marginBottom: 10 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 4, borderBottom: '2px solid #eee', paddingBottom: 5 }}>
+                {chapter.name.en} <span style={{ fontSize: 14, color: '#666', fontWeight: 'normal' }}>({chapter.name.hi})</span>
               </h2>
               
               <div className="sets-grid">
@@ -257,26 +257,26 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
                     )}
                     
                     <h3 style={{ 
-                      fontSize: 18, 
+                      fontSize: 16, 
                       fontWeight: "bold", 
-                      marginBottom: 8,
+                      marginBottom: 4,
                       color: "#1f2937",
-                      paddingRight: '60px'
+                      paddingRight: '50px'
                     }}>
                       {set.name?.en || set.name?.hi || `Set ${set.setNumber}`}
                     </h3>
                     
                     <p style={{ 
-                      fontSize: 24, 
+                      fontSize: 20, 
                       color: "var(--primary-blue)", 
                       fontWeight: "bold", 
-                      margin: "0 0 8px 0" 
+                      margin: "0 0 4px 0" 
                     }}>
                       {set.totalQuestions} Questions
                     </p>
                     
                     {/* Progress & Score */}
-                    <div style={{ marginTop: '8px' }}>
+                    <div style={{ marginTop: '4px' }}>
                         {(set.progress !== undefined && set.progress > 0) && (
                            <div style={{ 
                                display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' 

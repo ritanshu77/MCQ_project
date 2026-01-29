@@ -50,17 +50,17 @@ export default function ExamSetsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 min-h-screen">
+    <div className="max-w-6xl mx-auto p-2 min-h-screen">
       <style>{`
-        .header h1 { font-size: 28px; font-weight: bold; color: var(--primary-blue); margin: 0 0 8px 0; }
-        .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-        .set-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 5px solid #e67e22; text-decoration: none; display: block; }
-        .set-card:hover { transform: translateY(-4px); transition: transform .2s; }
+        .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
+        .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .set-card { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); border-left: 4px solid #e67e22; text-decoration: none; display: block; }
+        .set-card:hover { transform: translateY(-2px); transition: transform .2s; }
       `}</style>
 
       <div className="header">
         <h1>Exam Sets</h1>
-        <p style={{ color: "#666", fontSize: 14, margin: 5 }}>
+        <p style={{ color: "#666", fontSize: 13, margin: "0 0 10px 0" }}>
           {loading ? "Loading..." : `${sets.length} sets available`}
         </p>
       </div>

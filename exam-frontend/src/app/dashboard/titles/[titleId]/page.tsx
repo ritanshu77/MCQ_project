@@ -48,20 +48,20 @@ export default function TitleSubjectsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-2">
       <style>{`
-        .header h1 { font-size: 28px; font-weight: bold; color: var(--primary-blue); margin: 0 0 8px 0; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-        .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 5px solid #8e44ad; text-decoration: none; display: block; }
-        .card:hover { transform: translateY(-3px); transition: transform .2s; }
+        .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); border-left: 4px solid #8e44ad; text-decoration: none; display: block; }
+        .card:hover { transform: translateY(-2px); transition: transform .2s; }
         .code { position: absolute; top: 10px; right: 10px; font-size: 10px; background: #eee; padding: 2px 6px; border-radius: 4px; color: #555; }
-        .value { font-size: 22px; font-weight: bold; color: var(--primary-blue); margin: 6px 0; }
-        .desc { font-size: 12px; color: #888; }
+        .value { font-size: 20px; font-weight: bold; color: var(--primary-blue); margin: 4px 0; }
+        .desc { font-size: 11px; color: #888; }
       `}</style>
 
       <div className="header">
         <h1>Subjects by Source</h1>
-        <p style={{ color: "#666", fontSize: 14, margin: 5 }}>
+        <p style={{ color: "#666", fontSize: 13, margin: "0 0 10px 0" }}>
           {loading ? "Loading..." : `${subjects.length} subjects available`}
         </p>
       </div>
