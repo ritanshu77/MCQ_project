@@ -14,7 +14,14 @@ export class AttemptsService {
   ) {}
 
   async saveProgress(data: any) {
-    const { userId, questionSetId, questionId, answerKey, questionTime, totalTime } = data;
+    const {
+      userId,
+      questionSetId,
+      questionId,
+      answerKey,
+      questionTime,
+      totalTime,
+    } = data;
 
     // Find existing attempt or create new
     let attempt = await this.testResultModel.findOne({
@@ -29,7 +36,9 @@ export class AttemptsService {
       const totalQ = set?.totalQuestions || 0;
       const qType = set?.quizType || 'title';
       const tId = set?.titleId ? new Types.ObjectId(set.titleId) : undefined;
-      const cId = set?.chapterId ? new Types.ObjectId(set.chapterId) : undefined;
+      const cId = set?.chapterId
+        ? new Types.ObjectId(set.chapterId)
+        : undefined;
       // const eId = set?.examId ? new Types.ObjectId(set.examId as string) : undefined;
 
       attempt = new this.testResultModel({
@@ -57,13 +66,14 @@ export class AttemptsService {
     // 1. Fetch Question Details for Scoring
     const question = await this.questionModel.findById(questionId);
     if (!question) {
-       // Should not happen, but safe fallback
-       return await attempt.save();
+      // Should not happen, but safe fallback
+      return await attempt.save();
     }
 
     const qAny = question as any;
-    const correctKey = qAny.correctOptionKey || qAny.correctOption || qAny.correctAnswer;
-    // const chapterId = question.chapterDetails?._id || question.chapterId; 
+    const correctKey =
+      qAny.correctOptionKey || qAny.correctOption || qAny.correctAnswer;
+    // const chapterId = question.chapterDetails?._id || question.chapterId;
 
     // 2. Determine Previous State
     let oldAnswer: string | null = null;
@@ -84,33 +94,35 @@ export class AttemptsService {
 
     // Update Attempted Questions Array
     const qIdObj = new Types.ObjectId(questionId);
-    const alreadyAttempted = attempt.attemptedQuestions.some(id => id.toString() === questionId);
+    const alreadyAttempted = attempt.attemptedQuestions.some(
+      (id) => id.toString() === questionId,
+    );
     if (!alreadyAttempted) {
       attempt.attemptedQuestions.push(qIdObj);
     }
-    
+
     // 4. Calculate Score Delta
     const getScore = (ans: string | null) => {
-        if (!ans) return 0;
-        return ans === correctKey ? 1 : -0.33; // Negative marking
+      if (!ans) return 0;
+      return ans === correctKey ? 1 : -0.33; // Negative marking
     };
 
     const oldScore = getScore(oldAnswer);
     const newScore = getScore(answerKey);
-    
+
     // Initialize score if undefined
     if (attempt.score === undefined) attempt.score = 0;
-    
-    attempt.score = (attempt.score) - oldScore + newScore;
-    
+
+    attempt.score = attempt.score - oldScore + newScore;
+
     // Fix floating point precision
     attempt.score = Math.round(attempt.score * 100) / 100;
-    
+
     // Update correct count
     if (attempt.correctAnswers === undefined) attempt.correctAnswers = 0;
     if (oldScore > 0) attempt.correctAnswers--;
     if (newScore > 0) attempt.correctAnswers++;
-    
+
     // 5. Update Weak Areas
     // if (chapterId) {
     //   // ... logic for weak areas ...
@@ -127,7 +139,7 @@ export class AttemptsService {
         timeTaken: totalTime,
       };
     }
-    
+
     attempt.markModified('userAnswers');
     attempt.markModified('testDuration');
 

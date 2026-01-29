@@ -19,7 +19,7 @@ import { Public } from '../auth/decorators/public.decorator';
 export class QuestionsController {
   constructor(
     private readonly questionsService: QuestionsService,
-    private readonly attemptsService: AttemptsService
+    private readonly attemptsService: AttemptsService,
   ) {}
 
   @Post('bulk')
@@ -85,6 +85,7 @@ export class QuestionsController {
 
   @Get('chapter/sets')
   @Get('chapter/sets/:chapterId')
+  @Public()
   async createChapterSets(@Param('chapterId') chapterId?: string) {
     return this.questionsService.createSetsFromChapter(chapterId);
   }
@@ -123,10 +124,12 @@ export class QuestionsController {
     @Query('page') page = '1',
     @Query('limit') limit = '10',
     @Query('activeOnly') activeOnly = 'false',
-    @Req() req: any
+    @Req() req: any,
   ) {
     console.log(`[getUnitSets] Request for unit: ${unitId}`);
-    console.log(`[getUnitSets] Auth User: ${req.user ? req.user.userId : 'None'}`);
+    console.log(
+      `[getUnitSets] Auth User: ${req.user ? req.user.userId : 'None'}`,
+    );
 
     const result = await this.questionsService.getSetsByUnit(unitId, {
       page: parseInt(page),
@@ -134,59 +137,66 @@ export class QuestionsController {
       activeOnly: activeOnly === 'true',
     });
 
-    let attemptsMap = new Map();
+    const attemptsMap = new Map();
 
     if (req.user && req.user.userId) {
-       const userId = req.user.userId;
-       const allSets = (result.chapters as any[]).flatMap(c => c.sets);
-       const setIds = allSets.map(s => s._id.toString());
-       
-       console.log(`[getUnitSets] Fetching attempts for user ${userId}, sets count: ${setIds.length}`);
-       const attempts = await this.attemptsService.getAttemptsForSets(userId, setIds);
-       console.log(`[getUnitSets] Found ${attempts.length} attempts`);
-       
-       attempts.forEach(a => attemptsMap.set(a.questionSetId.toString(), a));
+      const userId = req.user.userId;
+      const allSets = (result.chapters as any[]).flatMap((c) => c.sets);
+      const setIds = allSets.map((s) => s._id.toString());
+
+      console.log(
+        `[getUnitSets] Fetching attempts for user ${userId}, sets count: ${setIds.length}`,
+      );
+      const attempts = await this.attemptsService.getAttemptsForSets(
+        userId,
+        setIds,
+      );
+      console.log(`[getUnitSets] Found ${attempts.length} attempts`);
+
+      attempts.forEach((a) => attemptsMap.set(a.questionSetId.toString(), a));
     }
 
-    (result.chapters as any[]).forEach(c => {
+    (result.chapters as any[]).forEach((c) => {
       c.sets.forEach((s: any) => {
-          const attempt = attemptsMap.get(s._id.toString());
-          if (attempt) {
-            // Dynamic data from DB
-            s.score = attempt.score;
-            s.totalAttempted = attempt.attemptedQuestions?.length || 0;
-            s.status = attempt.status;
-            s.isOngoing = attempt.status === 'ongoing';
-            if (s.totalQuestions > 0) {
-                s.progress = Math.round((s.totalAttempted / s.totalQuestions) * 100);
-            }
-            
-            // Return full attempt object + required fields
-            const attemptObj = attempt.toObject ? attempt.toObject() : attempt;
-            s.testResult = {
-                ...attemptObj, // Include all DB fields
-                _id: attempt._id,
-                score: attempt.score,
-                status: attempt.status,
-                correctAnswers: attempt.correctAnswers,
-                totalQuestions: attempt.totalQuestions,
-                isReset: attempt.isReset || false
-            };
-          } else {
-            // Default structure (client expects this if not started)
-            s.score = 0;
-            s.totalAttempted = 0;
-            s.progress = 0;
-            s.status = 'not_started';
-            s.testResult = {
-                _id: null,
-                score: 0,
-                status: 'not_started',
-                correctAnswers: 0,
-                totalQuestions: s.totalQuestions || 0,
-                isReset: false
-            };
+        const attempt = attemptsMap.get(s._id.toString());
+        if (attempt) {
+          // Dynamic data from DB
+          s.score = attempt.score;
+          s.totalAttempted = attempt.attemptedQuestions?.length || 0;
+          s.status = attempt.status;
+          s.isOngoing = attempt.status === 'ongoing';
+          if (s.totalQuestions > 0) {
+            s.progress = Math.round(
+              (s.totalAttempted / s.totalQuestions) * 100,
+            );
           }
+
+          // Return full attempt object + required fields
+          const attemptObj = attempt.toObject ? attempt.toObject() : attempt;
+          s.testResult = {
+            ...attemptObj, // Include all DB fields
+            _id: attempt._id,
+            score: attempt.score,
+            status: attempt.status,
+            correctAnswers: attempt.correctAnswers,
+            totalQuestions: attempt.totalQuestions,
+            isReset: attempt.isReset || false,
+          };
+        } else {
+          // Default structure (client expects this if not started)
+          s.score = 0;
+          s.totalAttempted = 0;
+          s.progress = 0;
+          s.status = 'not_started';
+          s.testResult = {
+            _id: null,
+            score: 0,
+            status: 'not_started',
+            correctAnswers: 0,
+            totalQuestions: s.totalQuestions || 0,
+            isReset: false,
+          };
+        }
       });
     });
 
@@ -210,6 +220,22 @@ export class QuestionsController {
   }
 
   @Public()
+  @Post('admin/generate-sets')
+  async generateSets(@Body() body: any) {
+    console.log('DEBUG: generateSets body:', body);
+    try {
+      const result = await this.questionsService.generateTitleChapterSets(
+        body.titleId,
+      );
+      console.log('DEBUG: generateSets result:', result);
+      return result;
+    } catch (error) {
+      console.error('DEBUG: generateSets error:', error);
+      throw error;
+    }
+  }
+
+  @Public()
   @Get('subjects/list')
   async getSubjectStatsComplete() {
     return this.questionsService.getSubjectStatsComplete();
@@ -226,68 +252,76 @@ export class QuestionsController {
   async getUnitsBySubject(
     @Query('subjectId') subjectId: string,
     @Query('titleId') titleId?: string,
-    @Req() req?: any
+    @Req() req?: any,
   ) {
     // 1. Get Base Data (Units -> Chapters -> Sets)
-    const result = await this.questionsService.getUnitsBySubject(subjectId, titleId);
+    const result = await this.questionsService.getUnitsBySubject(
+      subjectId,
+      titleId,
+    );
 
     // 2. Attach User Progress
     if (req?.user?.userId) {
       const userId = req.user.userId;
-      
+
       // Collect all sets to fetch attempts in one go
       const allSets: any[] = [];
-      (result?.units as any[]).forEach(u => {
-         if (u.chapters) {
-             u.chapters.forEach((c: any) => {
-                 if (c.sets) {
-                     c.sets.forEach((s: any) => allSets.push(s));
-                 }
-             });
-         }
+      (result?.units as any[]).forEach((u) => {
+        if (u.chapters) {
+          u.chapters.forEach((c: any) => {
+            if (c.sets) {
+              c.sets.forEach((s: any) => allSets.push(s));
+            }
+          });
+        }
       });
-      
+
       if (allSets.length > 0) {
-        const setIds = allSets.map(s => s._id.toString());
-        const attempts = await this.attemptsService.getAttemptsForSets(userId, setIds);
-        
+        const setIds = allSets.map((s) => s._id.toString());
+        const attempts = await this.attemptsService.getAttemptsForSets(
+          userId,
+          setIds,
+        );
+
         const attemptsMap = new Map();
-        attempts.forEach(a => attemptsMap.set(a.questionSetId.toString(), a));
+        attempts.forEach((a) => attemptsMap.set(a.questionSetId.toString(), a));
 
         // Attach attempt data to sets
-        (result?.units as any[]).forEach(u => {
-           if (u.chapters) {
-               u.chapters.forEach((c: any) => {
-                   if (c.sets) {
-                       c.sets.forEach((s: any) => {
-                           const attempt = attemptsMap.get(s._id.toString());
-                           if (attempt) {
-                               s.score = attempt.score;
-                               s.totalAttempted = attempt.attemptedQuestions?.length || 0;
-                               s.status = attempt.status;
-                               s.isOngoing = attempt.status === 'ongoing';
-                               if (s.totalQuestions > 0) {
-                                   s.progress = Math.round((s.totalAttempted / s.totalQuestions) * 100);
-                               }
-                               // Detailed result object as requested
-                               s.testResult = {
-                                   _id: attempt._id,
-                                   score: attempt.score,
-                                   status: attempt.status,
-                                   correctAnswers: attempt.correctAnswers,
-                                   totalQuestions: attempt.totalQuestions,
-                                   isReset: attempt.isReset || false
-                               };
-                           } else {
-                               s.score = 0;
-                               s.totalAttempted = 0;
-                               s.progress = 0;
-                               s.status = 'not_started';
-                           }
-                       });
-                   }
-               });
-           }
+        (result?.units as any[]).forEach((u) => {
+          if (u.chapters) {
+            u.chapters.forEach((c: any) => {
+              if (c.sets) {
+                c.sets.forEach((s: any) => {
+                  const attempt = attemptsMap.get(s._id.toString());
+                  if (attempt) {
+                    s.score = attempt.score;
+                    s.totalAttempted = attempt.attemptedQuestions?.length || 0;
+                    s.status = attempt.status;
+                    s.isOngoing = attempt.status === 'ongoing';
+                    if (s.totalQuestions > 0) {
+                      s.progress = Math.round(
+                        (s.totalAttempted / s.totalQuestions) * 100,
+                      );
+                    }
+                    // Detailed result object as requested
+                    s.testResult = {
+                      _id: attempt._id,
+                      score: attempt.score,
+                      status: attempt.status,
+                      correctAnswers: attempt.correctAnswers,
+                      totalQuestions: attempt.totalQuestions,
+                      isReset: attempt.isReset || false,
+                    };
+                  } else {
+                    s.score = 0;
+                    s.totalAttempted = 0;
+                    s.progress = 0;
+                    s.status = 'not_started';
+                  }
+                });
+              }
+            });
+          }
         });
       }
     }
@@ -298,13 +332,13 @@ export class QuestionsController {
   @Public()
   @Get('subjects/:subjectId')
   async getSubjectById(
-    @Param('subjectId', ParseObjectIdPipe) subjectId: string
+    @Param('subjectId', ParseObjectIdPipe) subjectId: string,
   ) {
     const subject = await this.questionsService.getSubjectById(subjectId);
-    
+
     return {
       success: true,
-      data: subject
+      data: subject,
     };
   }
 
@@ -325,7 +359,7 @@ export class QuestionsController {
     const titles = await this.questionsService.getTitlesList();
     return {
       success: true,
-      titles
+      titles,
     };
   }
 
@@ -335,7 +369,7 @@ export class QuestionsController {
     const exams = await this.questionsService.getExamsList();
     return {
       success: true,
-      exams
+      exams,
     };
   }
 

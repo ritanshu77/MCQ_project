@@ -2,10 +2,16 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AttemptsController } from './attempts.controller';
 import { AttemptsService } from './attempts.service';
-import { TestResult, TestResultSchema } from '../schemas/core/test-result.schema';
+import {
+  TestResult,
+  TestResultSchema,
+} from '../schemas/core/test-result.schema';
 import { Question, QuestionSchema } from '../schemas/exam-bank/question.schema';
 
-import { QuestionSet, QuestionSetSchema } from '../schemas/exam-bank/question-set.schema';
+import {
+  QuestionSet,
+  QuestionSetSchema,
+} from '../schemas/exam-bank/question-set.schema';
 
 @Module({
   imports: [

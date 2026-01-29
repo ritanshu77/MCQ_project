@@ -29,7 +29,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
       useFactory: async (configService: ConfigService) => {
         const baseUri = configService.get<string>('database.uri')!;
         const dbName = configService.get<string>('database.dbName')!;
-        
+
         // Console logs - DB details
         console.log(' MongoDB Base URI:', baseUri);
         console.log(' Database Name:', dbName);
@@ -46,7 +46,10 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
               console.log('MONGODB IS CONNECTED');
             });
             console.log(' MongoDB Connected!');
-            console.log(' DB Name:', connection.db ? connection.db.databaseName : 'Unknown');
+            console.log(
+              ' DB Name:',
+              connection.db ? connection.db.databaseName : 'Unknown',
+            );
             console.log(' Host:', connection.host);
             return connection;
           },
@@ -71,8 +74,6 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes('*');
+    consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

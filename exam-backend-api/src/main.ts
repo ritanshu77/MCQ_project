@@ -17,7 +17,7 @@ async function bootstrap() {
   // FIXED CORS - COMPLETE CONFIG
   app.enableCors({
     origin: [
-      "https://exam-bank-web-frontend.onrender.com",
+      'https://exam-bank-web-frontend.onrender.com',
       'http://localhost:3000',
       'http://127.0.0.1:3000',
       'http://172.19.160.1:3000',
@@ -44,33 +44,35 @@ async function bootstrap() {
 
   //  CRITICAL: Use Express adapter for direct routes
   const httpAdapter = app.getHttpAdapter();
-  
+
   // Health check endpoint for Render (no authentication needed)
   httpAdapter.get('/health', (req, res) => {
-    console.log(`[Health Check] Ping received from ${req.headers.origin || 'unknown origin'} at ${new Date().toISOString()}`);
-    res.json({ 
-      status: 'OK', 
+    console.log(
+      `[Health Check] Ping received from ${req.headers.origin || 'unknown origin'} at ${new Date().toISOString()}`,
+    );
+    res.json({
+      status: 'OK',
       service: 'Exam Bank API',
       timestamp: new Date().toString(),
       timezone: process.env.TZ,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
     });
   });
 
   // Root endpoint
   httpAdapter.get('/', (req, res) => {
-    res.json({ 
+    res.json({
       message: 'Exam Bank API',
       version: '1.0',
       docs: '/api',
-      health: '/health'
+      health: '/health',
     });
   });
 
   // IMPORTANT: Backend must NOT use the main 'PORT' variable in cloud because Frontend uses it.
   // We force Backend to run on 3001 (or specific BACKEND_PORT) internally.
   const port = process.env.BACKEND_PORT || 3001;
-  
+
   await app.listen(port, '0.0.0.0', () => {
     console.log(` Server running on port: ${port}`);
     console.log(` Access via: http://0.0.0.0:${port}`);

@@ -35,7 +35,7 @@ export class QuestionsService {
     @InjectModel(Question.name) private questionModel: Model<QuestionDocument>,
     @InjectModel(QuestionSet.name)
     private questionSetModel: Model<QuestionSetDocument>,
-  ) { }
+  ) {}
 
   private generateCode(name: string, prefix: string = ''): string {
     const codePart = name
@@ -254,29 +254,43 @@ export class QuestionsService {
         {} as { [key: string]: QuestionDocument[] },
       );
 
-      for (const [chapterIdStr, questions] of Object.entries(chapterQuestions)) {
+      for (const [chapterIdStr, questions] of Object.entries(
+        chapterQuestions,
+      )) {
         // Create Title Sets
         if (titleId) {
-          await this.createQuestionSets({ titleId, quizType: 'title' }, questions);
+          await this.createQuestionSets(
+            { titleId, quizType: 'title' },
+            questions,
+          );
           results.setsCreated++;
         }
-        
+
         // Create Exam Sets
         if (examId) {
-           await this.createQuestionSets({ examId, quizType: 'exam' }, questions);
-           results.setsCreated++;
+          await this.createQuestionSets(
+            { examId, quizType: 'exam' },
+            questions,
+          );
+          results.setsCreated++;
         }
 
         // Create Chapter Sets (Global)
         const chapterId = new Types.ObjectId(chapterIdStr);
         if (chapterId) {
-          await this.createQuestionSets({ chapterId, quizType: 'chapter' }, questions);
+          await this.createQuestionSets(
+            { chapterId, quizType: 'chapter' },
+            questions,
+          );
           results.setsCreated++;
 
           // Create Title-Chapter Sets (Specific to this Title)
           if (titleId) {
-             await this.createQuestionSets({ titleId, chapterId, quizType: 'title-chapter' }, questions);
-             results.setsCreated++;
+            await this.createQuestionSets(
+              { titleId, chapterId, quizType: 'title-chapter' },
+              questions,
+            );
+            results.setsCreated++;
           }
         }
       }
@@ -303,7 +317,7 @@ export class QuestionsService {
     questions: QuestionDocument[],
   ) {
     const { titleId, chapterId, examId, quizType } = criteria;
-    
+
     // ⭐ LOGIC: Title/Chapter = 100 limit, Exam = Unlimited
     const questionsPerSet = quizType === 'exam' ? 10000 : 100;
 
@@ -340,13 +354,18 @@ export class QuestionsService {
         const questionsToAdd = questions.slice(0, needed).map((q) => q._id);
         targetSet.questionIds.push(...questionsToAdd);
         targetSet.totalQuestions = targetSet.questionIds.length;
-        
+
         // Update Active Status
-        targetSet.isActive = quizType === 'exam' ? true : targetSet.totalQuestions >= questionsPerSet;
-        
+        targetSet.isActive =
+          quizType === 'exam'
+            ? true
+            : targetSet.totalQuestions >= questionsPerSet;
+
         await targetSet.save();
 
-        console.log(`✅ Set ${targetSet.setNumber} UPDATED! ${targetSet.totalQuestions} Questions`);
+        console.log(
+          `✅ Set ${targetSet.setNumber} UPDATED! ${targetSet.totalQuestions} Questions`,
+        );
 
         // Remove used questions
         questions = questions.slice(needed);
@@ -373,7 +392,8 @@ export class QuestionsService {
           .sort({ setNumber: -1 });
         const setNumber = (lastSet?.setNumber || 0) + 1;
 
-        const isActive = quizType === 'exam' ? true : setQuestions.length === 100;
+        const isActive =
+          quizType === 'exam' ? true : setQuestions.length === 100;
 
         await this.questionSetModel.create({
           titleId,
@@ -585,6 +605,109 @@ export class QuestionsService {
       }),
     };
   }
+
+  // ⭐ ADMIN API: Generate Title-Chapter Sets
+  async generateTitleChapterSets(targetTitleId?: string) {
+    console.log(
+      `🚀 Starting Title-Chapter Set Generation... ${targetTitleId ? `(Title: ${targetTitleId})` : '(ALL Titles)'}`,
+    );
+
+    // 1. Filter Questions
+    const match: any = { status: 'active' };
+    if (targetTitleId) {
+      match.titleId = new Types.ObjectId(targetTitleId);
+    } else {
+      match.titleId = { $exists: true }; // Ensure they have a title
+    }
+
+    const allQuestions = await this.questionModel
+      .find(match)
+      .sort({ questionNumber: 1 });
+    console.log(`📊 Found ${allQuestions.length} questions to process.`);
+
+    // 2. Group by Title + Chapter
+    const groups: { [key: string]: QuestionDocument[] } = {};
+
+    for (const q of allQuestions) {
+      // Check if titleId/chapterId exist
+      if (!q.titleId || !q.chapterId) {
+        // console.warn(`⚠️ Skipping Q ${q._id}: Missing Title or Chapter`);
+        continue;
+      }
+      const key = `${q.titleId.toString()}|${q.chapterId.toString()}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(q);
+    }
+
+    const results = {
+      groupsProcessed: 0,
+      setsCreated: 0,
+      questionsProcessed: allQuestions.length,
+    };
+
+    // 3. Process Groups
+    for (const [key, questions] of Object.entries(groups)) {
+      try {
+        const [tId, cId] = key.split('|');
+        const titleId = new Types.ObjectId(tId);
+        const chapterId = new Types.ObjectId(cId);
+
+        // A. Delete existing 'title-chapter' sets for this pair
+        await this.questionSetModel.deleteMany({
+          titleId,
+          chapterId,
+          quizType: 'title-chapter',
+        });
+
+        // B. Create new sets (100 per set)
+        const shuffled = [...questions].sort(() => Math.random() - 0.5);
+
+        const questionsPerSet = 100;
+        let setsForGroup = 0;
+
+        for (let i = 0; i < shuffled.length; i += questionsPerSet) {
+          const setQs = shuffled.slice(i, i + questionsPerSet);
+
+          if (setQs.length === 0) {
+            continue;
+          }
+          const firstQ = setQs[0];
+          let unitId: any = (firstQ as any).unitDetails?._id || (firstQ as any).unitId;
+          if (!unitId) {
+            const chapterDoc = await this.chapterModel.findById(chapterId).select('unitId');
+            unitId = chapterDoc?.unitId || undefined;
+          }
+
+          await this.questionSetModel.create({
+            titleId,
+            chapterId,
+            unitId: unitId,
+            name: {
+              hi: `सेट ${setsForGroup + 1}`,
+              en: `Set ${setsForGroup + 1}`,
+            },
+            questionIds: setQs.map((q) => q._id),
+            totalQuestions: setQs.length,
+            setNumber: setsForGroup + 1,
+            quizType: 'title-chapter',
+            isActive: setQs.length === questionsPerSet,
+          });
+          setsForGroup++;
+        }
+
+        results.setsCreated += setsForGroup;
+        results.groupsProcessed++;
+        console.log(
+          `✅ Title ${tId} | Chapter ${cId}: Created ${setsForGroup} sets for ${questions.length} questions`,
+        );
+      } catch (err) {
+        console.error(`❌ Error processing group ${key}:`, err);
+      }
+    }
+
+    return { success: true, ...results };
+  }
+
   async getSubjectStatsComplete(titleId?: string) {
     const match: any = { status: 'active' };
     if (titleId) {
@@ -679,9 +802,9 @@ export class QuestionsService {
 
     return {
       _id: subject._id,
-      name: subject.name,        // { en: "Computer Science", hi: "कम्प्यूटर विज्ञान" }
-      code: subject.code,        // "CS101"
-      description: subject.description
+      name: subject.name, // { en: "Computer Science", hi: "कम्प्यूटर विज्ञान" }
+      code: subject.code, // "CS101"
+      description: subject.description,
     };
   }
 
@@ -689,9 +812,9 @@ export class QuestionsService {
     try {
       const match: any = {
         status: 'active',
-        subjectId: new Types.ObjectId(subjectId)
+        subjectId: new Types.ObjectId(subjectId),
       };
-      
+
       if (titleId) {
         match.titleId = new Types.ObjectId(titleId);
       }
@@ -754,33 +877,44 @@ export class QuestionsService {
       const units = await this.questionModel.aggregate(pipeline);
 
       // ⭐ Fetch Chapters and Sets for each Unit
-      const unitsWithSets = await Promise.all(units.map(async (unit: any) => {
-        // Fetch chapters for this unit
-        const chapters = await this.chapterModel.find({ unitId: unit.unitId }).sort({ name: 1 }).lean();
+      const unitsWithSets = await Promise.all(
+        units.map(async (unit: any) => {
+          // Fetch chapters for this unit
+          const chapters = await this.chapterModel
+            .find({ unitId: unit.unitId })
+            .sort({ name: 1 })
+            .lean();
 
-        // Fetch sets for these chapters
-        const chaptersWithSets = await Promise.all(chapters.map(async (chapter: any) => {
-          const sets = await this.questionSetModel.find({
-            chapterId: chapter._id,
-            isActive: true,
-            quizType: 'chapter'
-          }).select('name setNumber totalQuestions isActive').sort({ setNumber: 1 }).lean();
+          // Fetch sets for these chapters
+          const chaptersWithSets = await Promise.all(
+            chapters.map(async (chapter: any) => {
+              const sets = await this.questionSetModel
+                .find({
+                  chapterId: chapter._id,
+                  isActive: true,
+                  quizType: 'chapter',
+                })
+                .select('name setNumber totalQuestions isActive')
+                .sort({ setNumber: 1 })
+                .lean();
+
+              return {
+                _id: chapter._id,
+                name: chapter.name,
+                code: chapter.code,
+                description: chapter.description,
+                sets,
+              };
+            }),
+          );
 
           return {
-            _id: chapter._id,
-            name: chapter.name,
-            code: chapter.code,
-            description: chapter.description,
-            sets
+            ...unit,
+            chapterCount: chaptersWithSets.length,
+            chapters: chaptersWithSets,
           };
-        }));
-
-        return {
-          ...unit,
-          chapterCount: chaptersWithSets.length,
-          chapters: chaptersWithSets
-        };
-      }));
+        }),
+      );
 
       return {
         subjectId,
@@ -792,10 +926,8 @@ export class QuestionsService {
         units: unitsWithSets,
       };
     } catch (error) {
-      console.log("---erri---", error);
-
+      console.log('---erri---', error);
     }
-
   }
   async getQuestionsByFilters(filters: {
     unitId?: string;
@@ -888,45 +1020,45 @@ export class QuestionsService {
       // ⭐ 4. DYNAMIC FILTERS - Subject/Chapter (Future Ready)
       ...(subjectId
         ? [
-          {
-            $match: {
-              'unitDetails.subjectCode': subjectId, // or subjectId field
+            {
+              $match: {
+                'unitDetails.subjectCode': subjectId, // or subjectId field
+              },
             },
-          },
-        ]
+          ]
         : []),
 
       ...(chapterId
         ? [
-          {
-            $match: {
-              'chapterDetails._id': new Types.ObjectId(chapterId),
+            {
+              $match: {
+                'chapterDetails._id': new Types.ObjectId(chapterId),
+              },
             },
-          },
-        ]
+          ]
         : []),
 
       // ⭐ 5. Difficulty Filter
       ...(difficulty !== 'all'
         ? [
-          {
-            $match: { difficulty },
-          },
-        ]
+            {
+              $match: { difficulty },
+            },
+          ]
         : []),
 
       // ⭐ 6. Search Filter
       ...(search
         ? [
-          {
-            $match: {
-              $or: [
-                { 'questionText.en': { $regex: search, $options: 'i' } },
-                { 'questionText.hi': { $regex: search, $options: 'i' } },
-              ],
+            {
+              $match: {
+                $or: [
+                  { 'questionText.en': { $regex: search, $options: 'i' } },
+                  { 'questionText.hi': { $regex: search, $options: 'i' } },
+                ],
+              },
             },
-          },
-        ]
+          ]
         : []),
 
       // ⭐ 7. PROJECT - Clean Frontend Structure
@@ -999,11 +1131,21 @@ export class QuestionsService {
   }
 
   async getTitlesList() {
-    return this.titleModel.find().select('name code description').sort({ 'name.en': 1 }).lean().exec();
+    return this.titleModel
+      .find()
+      .select('name code description')
+      .sort({ 'name.en': 1 })
+      .lean()
+      .exec();
   }
 
   async getExamsList() {
-    return this.examModel.find().select('name code year').sort({ year: -1 }).lean().exec();
+    return this.examModel
+      .find()
+      .select('name code year')
+      .sort({ year: -1 })
+      .lean()
+      .exec();
   }
 
   async createSetsFromChapter(chapterId?: string) {
@@ -1011,7 +1153,7 @@ export class QuestionsService {
     if (!chapterId) {
       console.log('🔄 Bulk processing ALL chapters...');
       const allChapters = await this.chapterModel.find().select('_id name');
-      
+
       const results: any[] = [];
       for (const ch of allChapters) {
         try {
@@ -1026,7 +1168,7 @@ export class QuestionsService {
       return {
         success: true,
         message: `Processed ${allChapters.length} chapters`,
-        details: results
+        details: results,
       };
     }
 
@@ -1048,26 +1190,33 @@ export class QuestionsService {
     const chapter = await this.chapterModel.findById(chapterObjectId);
     const unitId = chapter?.unitId;
 
-    console.log(`🎯 CHAPTER ${chapterId}: Found ${allQuestions.length} questions`);
+    console.log(
+      `🎯 CHAPTER ${chapterId}: Found ${allQuestions.length} questions`,
+    );
 
     // 2. Filter out questions ALREADY in sets (of type 'chapter')
     const existingSets = await this.questionSetModel.find({
       chapterId: chapterObjectId,
-      quizType: 'chapter'
+      quizType: 'chapter',
     });
 
     const usedQuestionIds = new Set(
-      existingSets.flatMap((s) => s.questionIds.map((id) => id.toString()))
+      existingSets.flatMap((s) => s.questionIds.map((id) => id.toString())),
     );
 
     let questionsToProcess = allQuestions.filter(
-      (q) => !usedQuestionIds.has(q._id.toString())
+      (q) => !usedQuestionIds.has(q._id.toString()),
     );
 
-    console.log(`🔍 Available questions (not in sets): ${questionsToProcess.length}`);
+    console.log(
+      `🔍 Available questions (not in sets): ${questionsToProcess.length}`,
+    );
 
     if (questionsToProcess.length === 0) {
-      return { success: false, message: 'All questions are already assigned to sets.' };
+      return {
+        success: false,
+        message: 'All questions are already assigned to sets.',
+      };
     }
 
     const questionsPerSet = 100;
@@ -1079,26 +1228,29 @@ export class QuestionsService {
       .findOne({
         chapterId: chapterObjectId,
         isActive: false,
-        quizType: 'chapter'
+        quizType: 'chapter',
       })
       .sort({ setNumber: -1 });
 
     if (incompleteSet) {
       const currentCount = incompleteSet.questionIds.length;
       const needed = questionsPerSet - currentCount;
-      
+
       if (needed > 0 && questionsToProcess.length > 0) {
         // Take strictly sequential from the available pool to fill the gap
         const questionsToAdd = questionsToProcess.slice(0, needed);
-        
-        incompleteSet.questionIds.push(...questionsToAdd.map(q => q._id));
+
+        incompleteSet.questionIds.push(...questionsToAdd.map((q) => q._id));
         incompleteSet.totalQuestions = incompleteSet.questionIds.length;
-        incompleteSet.isActive = incompleteSet.totalQuestions === questionsPerSet;
+        incompleteSet.isActive =
+          incompleteSet.totalQuestions === questionsPerSet;
         await incompleteSet.save();
 
-        console.log(`✅ Updated Set ${incompleteSet.setNumber}: ${incompleteSet.totalQuestions}/100`);
+        console.log(
+          `✅ Updated Set ${incompleteSet.setNumber}: ${incompleteSet.totalQuestions}/100`,
+        );
         setsUpdated++;
-        
+
         // Remove used questions
         questionsToProcess = questionsToProcess.slice(questionsToAdd.length);
       }
@@ -1106,10 +1258,12 @@ export class QuestionsService {
 
     // 4. Create NEW SETS from remaining
     if (questionsToProcess.length > 0) {
-       // Shuffle remaining for new sets
-       const shuffledQuestions = [...questionsToProcess].sort(() => Math.random() - 0.5);
+      // Shuffle remaining for new sets
+      const shuffledQuestions = [...questionsToProcess].sort(
+        () => Math.random() - 0.5,
+      );
 
-       for (let i = 0; i < shuffledQuestions.length; i += questionsPerSet) {
+      for (let i = 0; i < shuffledQuestions.length; i += questionsPerSet) {
         const setQuestions = shuffledQuestions.slice(i, i + questionsPerSet);
         const isActive = setQuestions.length === 100;
 
@@ -1117,7 +1271,7 @@ export class QuestionsService {
         const lastSet = await this.questionSetModel
           .findOne({ chapterId: chapterObjectId, quizType: 'chapter' })
           .sort({ setNumber: -1 });
-        
+
         const setNumber = (lastSet?.setNumber || 0) + 1;
 
         await this.questionSetModel.create({
@@ -1150,14 +1304,14 @@ export class QuestionsService {
       activeSets: await this.questionSetModel.countDocuments({
         chapterId: chapterObjectId,
         isActive: true,
-        quizType: 'chapter'
+        quizType: 'chapter',
       }),
     };
   }
 
   async getSetsByUnit(
     unitId: string,
-    options: { page?: number; limit?: number; activeOnly?: boolean }
+    options: { page?: number; limit?: number; activeOnly?: boolean },
   ) {
     const { page = 1, limit = 10, activeOnly = false } = options;
     const ObjectId = Types.ObjectId;
@@ -1167,14 +1321,17 @@ export class QuestionsService {
     }
 
     // 1. Find all chapters for this unit
-    const chapters = await this.chapterModel.find({ unitId: new ObjectId(unitId) }).sort({ name: 1 }).lean();
-    
+    const chapters = await this.chapterModel
+      .find({ unitId: new ObjectId(unitId) })
+      .sort({ name: 1 })
+      .lean();
+
     // 2. For each chapter, find its sets
     const chaptersWithSets = await Promise.all(
       chapters.map(async (chapter) => {
-        const query: any = { 
+        const query: any = {
           chapterId: chapter._id,
-          quizType: 'chapter'
+          quizType: 'chapter',
         };
         if (activeOnly) query.isActive = true;
 
@@ -1188,14 +1345,14 @@ export class QuestionsService {
           _id: chapter._id,
           name: chapter.name,
           code: chapter.code,
-          sets: sets
+          sets: sets,
         };
-      })
+      }),
     );
 
     return {
       unitId,
-      chapters: chaptersWithSets
+      chapters: chaptersWithSets,
     };
   }
 
@@ -1227,7 +1384,7 @@ export class QuestionsService {
       // ⭐ 1. MATCH - Chapter specific sets
       { $match: match },
 
-      // ⭐ 2. LOOKUP - Chapter + Subject (Safe)        
+      // ⭐ 2. LOOKUP - Chapter + Subject (Safe)
       {
         $lookup: {
           from: 'chapters',
@@ -1255,7 +1412,9 @@ export class QuestionsService {
           ],
         },
       },
-      { $unwind: { path: '$chapterDetails', preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: { path: '$chapterDetails', preserveNullAndEmptyArrays: true },
+      },
 
       // ⭐ 3. PROJECT - Clean structure
       {
@@ -1334,7 +1493,12 @@ export class QuestionsService {
                 as: 'chapterData',
               },
             },
-            { $unwind: { path: '$chapterData', preserveNullAndEmptyArrays: true } },
+            {
+              $unwind: {
+                path: '$chapterData',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
 
             // Unit lookup
             {
@@ -1345,7 +1509,9 @@ export class QuestionsService {
                 as: 'unitData',
               },
             },
-            { $unwind: { path: '$unitData', preserveNullAndEmptyArrays: true } },
+            {
+              $unwind: { path: '$unitData', preserveNullAndEmptyArrays: true },
+            },
 
             // Subject lookup
             {
@@ -1356,7 +1522,12 @@ export class QuestionsService {
                 as: 'subjectData',
               },
             },
-            { $unwind: { path: '$subjectData', preserveNullAndEmptyArrays: true } },
+            {
+              $unwind: {
+                path: '$subjectData',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
 
             // Project clean output
             {
@@ -1367,30 +1538,30 @@ export class QuestionsService {
                 correctAnswer: 1,
                 difficulty: 1,
                 questionNumber: 1,
-                explanation: 1,      // ⭐ ADDED
-                isPreviousYear: 1,   // ⭐ ADDED
+                explanation: 1, // ⭐ ADDED
+                isPreviousYear: 1, // ⭐ ADDED
                 previousExamCode: 1, // ⭐ ADDED
                 correctOptionKey: 1, // ⭐ ADDED
-                status: 1,           // ⭐ ADDED
-                createdAt: 1,        // ⭐ ADDED
-                updatedAt: 1,        // ⭐ ADDED
-                
+                status: 1, // ⭐ ADDED
+                createdAt: 1, // ⭐ ADDED
+                updatedAt: 1, // ⭐ ADDED
+
                 // ⭐ Full Details inside Question
                 subjectDetails: {
-                   _id: '$subjectData._id',
-                   name: '$subjectData.name',
-                   code: '$subjectData.code'
+                  _id: '$subjectData._id',
+                  name: '$subjectData.name',
+                  code: '$subjectData.code',
                 },
                 unitDetails: {
-                   _id: '$unitData._id',
-                   name: '$unitData.name',
-                   code: '$unitData.code'
+                  _id: '$unitData._id',
+                  name: '$unitData.name',
+                  code: '$unitData.code',
                 },
                 chapterDetails: {
-                   _id: '$chapterData._id',
-                   name: '$chapterData.name',
-                   code: '$chapterData.code'
-                }
+                  _id: '$chapterData._id',
+                  name: '$chapterData.name',
+                  code: '$chapterData.code',
+                },
               },
             },
           ],

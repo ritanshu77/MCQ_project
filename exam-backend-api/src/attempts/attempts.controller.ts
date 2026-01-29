@@ -1,4 +1,12 @@
-﻿import { Controller, Post, Get, Body, Query, HttpStatus, HttpCode } from '@nestjs/common';
+﻿import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  HttpStatus,
+  HttpCode,
+} from '@nestjs/common';
 import { AttemptsService } from './attempts.service';
 
 @Controller('attempts')
@@ -25,9 +33,15 @@ export class AttemptsController {
   }
 
   @Get('progress')
-  async getProgress(@Query('userId') userId: string, @Query('questionSetId') questionSetId: string) {
+  async getProgress(
+    @Query('userId') userId: string,
+    @Query('questionSetId') questionSetId: string,
+  ) {
     try {
-      const result = await this.attemptsService.getProgress(userId, questionSetId);
+      const result = await this.attemptsService.getProgress(
+        userId,
+        questionSetId,
+      );
       return {
         success: true,
         data: result,
@@ -45,7 +59,10 @@ export class AttemptsController {
   @HttpCode(HttpStatus.OK)
   async resetProgress(@Body() body: { userId: string; questionSetId: string }) {
     try {
-      const result = await this.attemptsService.resetProgress(body.userId, body.questionSetId);
+      const result = await this.attemptsService.resetProgress(
+        body.userId,
+        body.questionSetId,
+      );
       return {
         success: true,
         message: 'Progress reset successfully',
