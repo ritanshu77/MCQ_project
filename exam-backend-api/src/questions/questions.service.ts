@@ -257,21 +257,27 @@ export class QuestionsService {
       for (const [chapterIdStr, questions] of Object.entries(chapterQuestions)) {
         // Create Title Sets
         if (titleId) {
-          await this.createQuestionSets(titleId, 'title', questions);
+          await this.createQuestionSets({ titleId, quizType: 'title' }, questions);
           results.setsCreated++;
         }
         
         // Create Exam Sets
         if (examId) {
-           await this.createQuestionSets(examId, 'exam', questions);
+           await this.createQuestionSets({ examId, quizType: 'exam' }, questions);
            results.setsCreated++;
         }
 
-        // Create Chapter Sets
+        // Create Chapter Sets (Global)
         const chapterId = new Types.ObjectId(chapterIdStr);
         if (chapterId) {
-          await this.createQuestionSets(chapterId, 'chapter', questions);
+          await this.createQuestionSets({ chapterId, quizType: 'chapter' }, questions);
           results.setsCreated++;
+
+          // Create Title-Chapter Sets (Specific to this Title)
+          if (titleId) {
+             await this.createQuestionSets({ titleId, chapterId, quizType: 'title-chapter' }, questions);
+             results.setsCreated++;
+          }
         }
       }
     }
@@ -288,30 +294,32 @@ export class QuestionsService {
   }
 
   private async createQuestionSets(
-    parentId: Types.ObjectId,
-    parentType: 'title' | 'exam' | 'chapter',
+    criteria: {
+      titleId?: Types.ObjectId;
+      chapterId?: Types.ObjectId;
+      examId?: Types.ObjectId;
+      quizType: string;
+    },
     questions: QuestionDocument[],
   ) {
-    // ⭐ LOGIC: Title/Chapter = 100 limit, Exam = Unlimited
-    const questionsPerSet = parentType === 'exam' ? 10000 : 100;
+    const { titleId, chapterId, examId, quizType } = criteria;
     
-    let parentField = 'titleId';
-    if (parentType === 'exam') parentField = 'examId';
-    if (parentType === 'chapter') parentField = 'chapterId';
+    // ⭐ LOGIC: Title/Chapter = 100 limit, Exam = Unlimited
+    const questionsPerSet = quizType === 'exam' ? 10000 : 100;
 
     console.log(
-      `🎯 ${parentType.toUpperCase()} ${parentId}: Processing ${questions.length} new questions`,
+      `🎯 ${quizType.toUpperCase()} (T:${titleId} C:${chapterId} E:${examId}): Processing ${questions.length} new questions`,
     );
 
     // 1. Find TARGET set (Incomplete for Title/Chapter, ANY Latest for Exam)
-    const query: any = {
-      [parentField]: parentId,
-      quizType: parentType,
-    };
+    const query: any = { quizType };
+    if (titleId) query.titleId = titleId;
+    if (chapterId) query.chapterId = chapterId;
+    if (examId) query.examId = examId;
 
     // For Titles/Chapters, we only want to fill INCOMPLETE sets.
     // For Exams, we want to fill the LATEST set regardless of status (Unlimited sets).
-    if (parentType !== 'exam') {
+    if (quizType !== 'exam') {
       query.isActive = false;
     }
 
@@ -334,7 +342,7 @@ export class QuestionsService {
         targetSet.totalQuestions = targetSet.questionIds.length;
         
         // Update Active Status
-        targetSet.isActive = parentType === 'exam' ? true : targetSet.totalQuestions >= questionsPerSet;
+        targetSet.isActive = quizType === 'exam' ? true : targetSet.totalQuestions >= questionsPerSet;
         
         await targetSet.save();
 
@@ -354,20 +362,28 @@ export class QuestionsService {
       for (let i = 0; i < shuffledQuestions.length; i += questionsPerSet) {
         const setQuestions = shuffledQuestions.slice(i, i + questionsPerSet);
 
+        // Find last set for numbering
+        const lastSetQuery: any = { quizType };
+        if (titleId) lastSetQuery.titleId = titleId;
+        if (chapterId) lastSetQuery.chapterId = chapterId;
+        if (examId) lastSetQuery.examId = examId;
+
         const lastSet = await this.questionSetModel
-          .findOne({ [parentField]: parentId, quizType: parentType })
+          .findOne(lastSetQuery)
           .sort({ setNumber: -1 });
         const setNumber = (lastSet?.setNumber || 0) + 1;
 
-        const isActive = parentType === 'exam' ? true : setQuestions.length === 100;
+        const isActive = quizType === 'exam' ? true : setQuestions.length === 100;
 
         await this.questionSetModel.create({
-          [parentField]: parentId,
+          titleId,
+          chapterId,
+          examId,
           name: { hi: `सेट ${setNumber}`, en: `Set ${setNumber}` },
           questionIds: setQuestions.map((q) => q._id),
           totalQuestions: setQuestions.length,
           setNumber,
-          quizType: parentType,
+          quizType,
           isActive,
         });
 
@@ -453,11 +469,13 @@ export class QuestionsService {
     titleId?: string;
     chapterId?: string;
     examId?: string;
+    quizType?: string;
   }) {
     const query: any = { isActive: true };
     if (filters.titleId) query.titleId = filters.titleId;
     if (filters.chapterId) query.chapterId = filters.chapterId;
     if (filters.examId) query.examId = filters.examId;
+    if (filters.quizType) query.quizType = filters.quizType;
 
     return this.questionSetModel
       .find(query)
@@ -979,6 +997,15 @@ export class QuestionsService {
       filtersApplied: result.filtersUsed.length > 0,
     };
   }
+
+  async getTitlesList() {
+    return this.titleModel.find().select('name code description').sort({ 'name.en': 1 }).lean().exec();
+  }
+
+  async getExamsList() {
+    return this.examModel.find().select('name code year').sort({ year: -1 }).lean().exec();
+  }
+
   async createSetsFromChapter(chapterId?: string) {
     // ⭐ IF NO chapterId -> Process ALL chapters
     if (!chapterId) {

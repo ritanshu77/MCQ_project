@@ -62,9 +62,10 @@ interface SetDetails {
 interface SetQuestionsViewProps {
     setId: string;
     unitId: string;
+    backPath?: string;
 }
 
-export default function SetQuestionsView({ setId, unitId }: SetQuestionsViewProps) {
+export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestionsViewProps) {
     const router = useRouter();
     const [setDetails, setSetDetails] = useState<SetDetails | null>(null);
     const [loading, setLoading] = useState(true);
@@ -102,7 +103,7 @@ export default function SetQuestionsView({ setId, unitId }: SetQuestionsViewProp
         try {
             const key = `quiz_exited_${setId}`;
             if (typeof window !== 'undefined' && localStorage.getItem(key) === '1') {
-                router.replace(`/dashboard/units/${unitId}/sets`);
+                router.replace(backPath || `/dashboard/units/${unitId}/sets`);
             }
         } catch {}
     }, [router, setId, unitId]);
@@ -602,7 +603,7 @@ export default function SetQuestionsView({ setId, unitId }: SetQuestionsViewProp
                                 const handlePopState = () => {
                                     console.log("[Exit Quiz] popstate event received (back complete). Replacing route.");
                                     window.removeEventListener('popstate', handlePopState);
-                                    router.replace(`/dashboard/units/${unitId}/sets`);
+                                    router.replace(backPath || `/dashboard/units/${unitId}/sets`);
                                 };
                                 
                                 window.addEventListener('popstate', handlePopState);
@@ -612,7 +613,7 @@ export default function SetQuestionsView({ setId, unitId }: SetQuestionsViewProp
                                 setTimeout(() => {
                                     console.log("[Exit Quiz] Fallback timeout triggered");
                                     window.removeEventListener('popstate', handlePopState);
-                                    router.replace(`/dashboard/units/${unitId}/sets`);
+                                    router.replace(backPath || `/dashboard/units/${unitId}/sets`);
                                 }, 300);
                             }}
                         >

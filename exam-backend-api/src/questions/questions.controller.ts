@@ -67,6 +67,22 @@ export class QuestionsController {
     });
   }
 
+  @Public()
+  @Get('sets')
+  async getQuestionSets(
+    @Query('titleId') titleId?: string,
+    @Query('chapterId') chapterId?: string,
+    @Query('examId') examId?: string,
+    @Query('quizType') quizType?: string,
+  ) {
+    return this.questionsService.getQuestionSets({
+      titleId,
+      chapterId,
+      examId,
+      quizType,
+    });
+  }
+
   @Get('chapter/sets')
   @Get('chapter/sets/:chapterId')
   async createChapterSets(@Param('chapterId') chapterId?: string) {
@@ -193,9 +209,15 @@ export class QuestionsController {
     return this.questionsService.createSetsFromTitle(titleId);
   }
 
+  @Public()
   @Get('subjects/list')
+  async getSubjectStatsComplete() {
+    return this.questionsService.getSubjectStatsComplete();
+  }
+
+  @Public()
   @Get('subjects/list/:titleId')
-  async getSubjectStatsComplete(@Param('titleId') titleId?: string) {
+  async getSubjectStatsCompleteByTitle(@Param('titleId') titleId: string) {
     return this.questionsService.getSubjectStatsComplete(titleId);
   }
 
@@ -273,6 +295,7 @@ export class QuestionsController {
     return result;
   }
 
+  @Public()
   @Get('subjects/:subjectId')
   async getSubjectById(
     @Param('subjectId', ParseObjectIdPipe) subjectId: string
@@ -285,6 +308,7 @@ export class QuestionsController {
     };
   }
 
+  @Public()
   @Get('set/:setId')
   async getQuestionsBySetId(@Param('setId', ParseObjectIdPipe) setId: string) {
     const result = await this.questionsService.getQuestionsBySetId(setId);
@@ -292,6 +316,26 @@ export class QuestionsController {
     return {
       success: true,
       data: result,
+    };
+  }
+
+  @Public()
+  @Get('titles/list')
+  async getTitlesList() {
+    const titles = await this.questionsService.getTitlesList();
+    return {
+      success: true,
+      titles
+    };
+  }
+
+  @Public()
+  @Get('exams/list')
+  async getExamsList() {
+    const exams = await this.questionsService.getExamsList();
+    return {
+      success: true,
+      exams
     };
   }
 

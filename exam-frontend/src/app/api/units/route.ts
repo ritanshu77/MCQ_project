@@ -3,10 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const subjectId = searchParams.get('subjectId');
-  
-   const backend = process.env.BACKEND_URL ;
-  const url = `${backend}/questions/subjects/units?subjectId=${subjectId}`;
-    console.log("----errr---",url);
+  const titleId = searchParams.get('titleId');
+  const backend = process.env.BACKEND_URL || "http://localhost:3001";
+  const url = `${backend}/questions/subjects/units?subjectId=${subjectId}${titleId ? `&titleId=${titleId}` : ''}`;
     
   const cookieHeader = request.headers.get("cookie");
   const authHeader = request.headers.get("authorization");
@@ -17,6 +16,7 @@ export async function GET(request: NextRequest) {
           'Cookie': cookieHeader || '',
           'Authorization': authHeader || '',
         },
+      cache: 'no-store'
   });
   
   const data = await res.json();

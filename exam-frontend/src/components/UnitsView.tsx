@@ -21,13 +21,15 @@ interface UnitsViewProps {
   subjectName: string;
   subjectNameHi: string;
   onBack: () => void;
+  titleId?: string;
 }
 
 export default function UnitsView({ 
   subjectId, 
   subjectName, 
   subjectNameHi,
-  onBack 
+  onBack,
+  titleId
 }: UnitsViewProps) {
   const router = useRouter();
   const [units, setUnits] = useState<Unit[]>([]);
@@ -44,7 +46,7 @@ export default function UnitsView({
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `/api/units?subjectId=${subjectId}`,
+        `/api/units?subjectId=${subjectId}${titleId ? `&titleId=${titleId}` : ''}`,
         { 
             withCredentials: true,
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }

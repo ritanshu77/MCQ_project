@@ -57,7 +57,7 @@ export class QuestionSet {
 
   // ✅ YE FIELD ADD KARO
   @Prop({
-    enum: ['title', 'chapter', 'exam', 'practice', 'unit'],
+    enum: ['title', 'chapter', 'exam', 'practice', 'unit', 'title-chapter'],
     default: 'title',
     required: true,
   })
