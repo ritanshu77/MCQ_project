@@ -1,29 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const titleId = searchParams.get("titleId");
-  const chapterId = searchParams.get("chapterId");
-  const examId = searchParams.get("examId");
-  const quizType = searchParams.get("quizType");
-
+export async function POST(request: NextRequest) {
+  const body = await request.json();
   const backend = process.env.BACKEND_URL || "http://localhost:3001";
-  const url = `${backend}/questions/sets` +
-    `?${titleId ? `titleId=${titleId}&` : ''}` +
-    `${chapterId ? `chapterId=${chapterId}&` : ''}` +
-    `${examId ? `examId=${examId}&` : ''}` +
-    `${quizType ? `quizType=${quizType}` : ''}`;
+  const url = `${backend}/questions/sets`;
 
   try {
     const cookieHeader = request.headers.get("cookie");
     const authHeader = request.headers.get("authorization");
 
     const res = await fetch(url, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Cookie": cookieHeader || "",
         "Authorization": authHeader || "",
       },
+      body: JSON.stringify(body),
       cache: "no-store",
     });
 

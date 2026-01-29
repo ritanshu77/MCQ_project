@@ -55,6 +55,34 @@ export class AttemptsController {
     }
   }
 
+  @Get('history')
+  async getHistory(
+    @Query('userId') userId: string,
+    @Query('quizType') quizType?: string,
+    @Query('titleId') titleId?: string,
+    @Query('chapterId') chapterId?: string,
+    @Query('status') status?: string,
+  ) {
+    try {
+      const result = await this.attemptsService.getHistory(userId, {
+        quizType,
+        titleId,
+        chapterId,
+        status,
+      });
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch history',
+        error: error.message,
+      };
+    }
+  }
+
   @Post('reset')
   @HttpCode(HttpStatus.OK)
   async resetProgress(@Body() body: { userId: string; questionSetId: string }) {

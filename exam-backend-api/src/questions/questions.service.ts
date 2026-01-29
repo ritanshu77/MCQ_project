@@ -37,6 +37,7 @@ export class QuestionsService {
     private questionSetModel: Model<QuestionSetDocument>,
   ) {}
 
+
   private generateCode(name: string, prefix: string = ''): string {
     const codePart = name
       .substring(0, 4)
@@ -808,7 +809,11 @@ export class QuestionsService {
     };
   }
 
-  async getUnitsBySubject(subjectId: string, titleId?: string) {
+  async getUnitsBySubject(
+    subjectId: string,
+    titleId?: string,
+    quizType?: string,
+  ) {
     try {
       const match: any = {
         status: 'active',
@@ -888,12 +893,24 @@ export class QuestionsService {
           // Fetch sets for these chapters
           const chaptersWithSets = await Promise.all(
             chapters.map(async (chapter: any) => {
+              const targetQuizType = quizType
+                ? quizType
+                : titleId
+                  ? 'title-chapter'
+                  : 'chapter';
+
+              const setQuery: any = {
+                chapterId: chapter._id,
+                isActive: true,
+                quizType: targetQuizType,
+              };
+
+              if (titleId) {
+                setQuery.titleId = new Types.ObjectId(titleId);
+              }
+
               const sets = await this.questionSetModel
-                .find({
-                  chapterId: chapter._id,
-                  isActive: true,
-                  quizType: 'chapter',
-                })
+                .find(setQuery)
                 .select('name setNumber totalQuestions isActive')
                 .sort({ setNumber: 1 })
                 .lean();
@@ -1311,9 +1328,21 @@ export class QuestionsService {
 
   async getSetsByUnit(
     unitId: string,
-    options: { page?: number; limit?: number; activeOnly?: boolean },
+    options: {
+      page?: number;
+      limit?: number;
+      activeOnly?: boolean;
+      titleId?: string;
+      quizType?: string;
+    },
   ) {
-    const { page = 1, limit = 10, activeOnly = false } = options;
+    const {
+      page = 1,
+      limit = 10,
+      activeOnly = false,
+      titleId,
+      quizType,
+    } = options;
     const ObjectId = Types.ObjectId;
 
     if (!ObjectId.isValid(unitId)) {
@@ -1329,10 +1358,19 @@ export class QuestionsService {
     // 2. For each chapter, find its sets
     const chaptersWithSets = await Promise.all(
       chapters.map(async (chapter) => {
+        const targetQuizType = quizType
+          ? quizType
+          : titleId
+            ? 'title-chapter'
+            : 'chapter';
+
         const query: any = {
           chapterId: chapter._id,
-          quizType: 'chapter',
+          quizType: targetQuizType,
         };
+        if (titleId) {
+          query.titleId = new ObjectId(titleId);
+        }
         if (activeOnly) query.isActive = true;
 
         const sets = await this.questionSetModel

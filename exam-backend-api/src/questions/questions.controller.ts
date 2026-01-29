@@ -68,13 +68,17 @@ export class QuestionsController {
   }
 
   @Public()
-  @Get('sets')
+  @Post('sets')
   async getQuestionSets(
-    @Query('titleId') titleId?: string,
-    @Query('chapterId') chapterId?: string,
-    @Query('examId') examId?: string,
-    @Query('quizType') quizType?: string,
+    @Body()
+    body: {
+      titleId?: string;
+      chapterId?: string;
+      examId?: string;
+      quizType?: string;
+    },
   ) {
+    const { titleId, chapterId, examId, quizType } = body;
     return this.questionsService.getQuestionSets({
       titleId,
       chapterId,
@@ -118,14 +122,27 @@ export class QuestionsController {
   }
 
   @Public()
-  @Get('unit/allsets/:unitId')
+  @Post('unit/allsets/:unitId')
   async getUnitSets(
     @Param('unitId', ParseObjectIdPipe) unitId: string,
-    @Query('page') page = '1',
-    @Query('limit') limit = '10',
-    @Query('activeOnly') activeOnly = 'false',
+    @Body()
+    body: {
+      page?: string;
+      limit?: string;
+      activeOnly?: string;
+      titleId?: string;
+      quizType?: string;
+    },
     @Req() req: any,
   ) {
+    const {
+      page = '1',
+      limit = '10',
+      activeOnly = 'false',
+      titleId,
+      quizType,
+    } = body;
+
     console.log(`[getUnitSets] Request for unit: ${unitId}`);
     console.log(
       `[getUnitSets] Auth User: ${req.user ? req.user.userId : 'None'}`,
@@ -135,6 +152,8 @@ export class QuestionsController {
       page: parseInt(page),
       limit: parseInt(limit),
       activeOnly: activeOnly === 'true',
+      titleId,
+      quizType,
     });
 
     const attemptsMap = new Map();
@@ -248,16 +267,22 @@ export class QuestionsController {
   }
 
   @Public()
-  @Get('subjects/units')
+  @Post('subjects/units')
   async getUnitsBySubject(
-    @Query('subjectId') subjectId: string,
-    @Query('titleId') titleId?: string,
+    @Body()
+    body: {
+      subjectId: string;
+      titleId?: string;
+      quizType?: string;
+    },
     @Req() req?: any,
   ) {
+    const { subjectId, titleId, quizType } = body;
     // 1. Get Base Data (Units -> Chapters -> Sets)
     const result = await this.questionsService.getUnitsBySubject(
       subjectId,
       titleId,
+      quizType,
     );
 
     // 2. Attach User Progress

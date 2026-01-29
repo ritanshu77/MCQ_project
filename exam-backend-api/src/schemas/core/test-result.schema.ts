@@ -65,7 +65,7 @@ export class TestResult {
   @Prop({ enum: ['ongoing', 'completed', 'paused'], default: 'completed' })
   status: string;
 
-  @Prop({ enum: ['title', 'exam', 'chapter'], required: true })
+  @Prop({ enum: ['title', 'exam', 'chapter', 'title-chapter', 'institute-chapter'], required: true })
   quizType: string;
 
   @Prop({ type: Types.ObjectId, ref: Title.name })

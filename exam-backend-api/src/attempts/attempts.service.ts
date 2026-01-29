@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TestResult } from '../schemas/core/test-result.schema';
@@ -171,6 +171,35 @@ export class AttemptsService {
       questionSetId: { $in: setIds.map((id) => new Types.ObjectId(id)) },
       isReset: { $ne: true },
     });
+  }
+
+  async getHistory(
+    userId: string,
+    filters: {
+      quizType?: string;
+      titleId?: string;
+      chapterId?: string;
+      status?: string;
+    },
+  ) {
+    const query: any = {
+      userId: new Types.ObjectId(userId),
+      isReset: { $ne: true },
+    };
+
+    if (filters.quizType) query.quizType = filters.quizType;
+    if (filters.titleId) query.titleId = new Types.ObjectId(filters.titleId);
+    if (filters.chapterId)
+      query.chapterId = new Types.ObjectId(filters.chapterId);
+    if (filters.status) query.status = filters.status;
+
+    return await this.testResultModel
+      .find(query)
+      .populate('questionSetId', 'name totalQuestions')
+      .populate('titleId', 'name')
+      .populate('chapterId', 'name')
+      .sort({ updatedAt: -1 })
+      .exec();
   }
 
   async resetProgress(userId: string, questionSetId: string) {

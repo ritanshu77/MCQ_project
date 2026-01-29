@@ -45,8 +45,13 @@ export default function UnitsView({
   const fetchUnits = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(
-        `/api/units?subjectId=${subjectId}${titleId ? `&titleId=${titleId}` : ''}`,
+      const { data } = await axios.post(
+        `/api/units`,
+        {
+          subjectId,
+          titleId,
+          quizType: titleId ? 'title-chapter' : 'chapter' // Pass quizType explicitly
+        },
         { 
             withCredentials: true,
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
@@ -113,7 +118,12 @@ export default function UnitsView({
             <div 
               key={unit.unitId} 
               className="unit-card"
-              onClick={() => router.push(`/dashboard/units/${unit.unitId}/sets`)}
+              onClick={() => {
+                const url = titleId 
+                  ? `/dashboard/units/${unit.unitId}/sets?titleId=${titleId}`
+                  : `/dashboard/units/${unit.unitId}/sets`;
+                router.push(url);
+              }}
             >
               {/* ✅ FIXED: Object name handling */}
               <h3 style={{ 

@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ unitId: string }> }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ unitId: string }> }) {
   const { unitId } = await params;
-  const backend = process.env.BACKEND_URL ;
+  const body = await request.json();
+  
+  const backend = process.env.BACKEND_URL;
   const url = `${backend}/questions/unit/allsets/${unitId}`;
 
   try {
       const cookieHeader = request.headers.get("cookie");
       const authHeader = request.headers.get("authorization");
       const res = await fetch(url, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Cookie': cookieHeader || '',
           'Authorization': authHeader || '',
         },
+        body: JSON.stringify(body),
         cache: 'no-store'
       });
 

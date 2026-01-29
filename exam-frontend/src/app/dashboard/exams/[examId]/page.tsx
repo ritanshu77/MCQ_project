@@ -29,7 +29,10 @@ export default function ExamSetsPage() {
   const fetchSets = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/api/sets?examId=${examId}&quizType=exam`, { signal });
+      const { data } = await axios.post(`/api/sets`, {
+        examId: examId as string,
+        quizType: 'exam'
+      });
       if (data && Array.isArray(data)) {
         setSets(data);
       } else if (data?.success && Array.isArray(data?.data)) {

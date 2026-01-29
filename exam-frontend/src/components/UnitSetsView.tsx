@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getAuthToken } from "@/utils/auth";
 import { toast, confirmToast } from "@/components/Toast";
 
@@ -39,6 +39,7 @@ interface UnitSetsViewProps {
 
 export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ id: string; name: string } | null>(null);
@@ -76,8 +77,26 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
       const token = getAuthToken();
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-      const { data } = await axios.get(
+      // Need to get titleId from somewhere if we want to support title-chapter
+      // Currently UnitSetsView only has unitId prop.
+      // Assuming parent passes titleId or we extract it from URL if possible.
+      // But for now, let's look at URL parameters since this component is likely on a page with params
+      const currentUrl = new URL(window.location.href);
+      let titleId = currentUrl.pathname.split('/titles/')[1]?.split('/')[0];
+
+      // Fallback to query params if not found in path
+      if (!titleId && searchParams) {
+         titleId = searchParams.get('titleId') || undefined;
+      }
+
+      const quizType = titleId ? 'title-chapter' : 'chapter';
+
+      const { data } = await axios.post(
         `/api/units/${unitId}/sets`,
+        {
+           titleId,
+           quizType
+        },
         { 
             withCredentials: true,
             headers,
@@ -216,7 +235,19 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
                     className="set-card"
                     onClick={() => {
                       try { localStorage.removeItem(`quiz_exited_${set._id}`); } catch {}
-                      router.push(`/dashboard/units/${unitId}/sets/${set._id}`);
+                      
+                      // Check for titleId in current URL or search params
+                      const currentUrl = new URL(window.location.href);
+                      let currentTitleId: string | undefined = currentUrl.pathname.split('/titles/')[1]?.split('/')[0];
+                      if (!currentTitleId && searchParams) {
+                         currentTitleId = searchParams.get('titleId') || undefined;
+                      }
+
+                      const targetUrl = currentTitleId 
+                        ? `/dashboard/units/${unitId}/sets/${set._id}?titleId=${currentTitleId}`
+                        : `/dashboard/units/${unitId}/sets/${set._id}`;
+
+                      router.push(targetUrl);
                     }}
                   >
                     {!set.isActive && (
