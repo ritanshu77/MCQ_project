@@ -1,4 +1,5 @@
  "use client";
+import TimeTracker from "../../components/TimeTracker";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
 import { usePathname } from "next/navigation";
@@ -13,20 +14,23 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hideChrome = /^\/dashboard\/units\/[^/]+\/sets\/[^/]+$/.test(pathname || "");
-  if (hideChrome) {
-    return (
-      <main className="main-content" style={{ minHeight: "100vh" }}>
-        {children}
-      </main>
-    );
-  }
+  
   return (
-    <div>
-      <Navbar />
-      <div className="wrapper">
-        <Sidebar />
-        <main className="main-content">{children}</main>
-      </div>
-    </div>
+    <>
+      <TimeTracker />
+      {hideChrome ? (
+        <main className="main-content" style={{ minHeight: "100vh" }}>
+          {children}
+        </main>
+      ) : (
+        <div>
+          <Navbar />
+          <div className="wrapper">
+            <Sidebar />
+            <main className="main-content">{children}</main>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

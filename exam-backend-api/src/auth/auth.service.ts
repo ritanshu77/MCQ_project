@@ -231,6 +231,7 @@ export class AuthService {
           browserId: user.browserId,
           type: user.type,
           sessionCount: user.sessions.length,
+          totalTimeSpent: user.totalTimeSpent,
           createdAt: user.createdAt,
         },
         message: 'Token is valid',
@@ -277,6 +278,9 @@ export class AuthService {
       session.totalTime += additionalTime;
       session.lastActive = new Date();
     }
+
+    // Update global totalTimeSpent
+    user.totalTimeSpent = (user.totalTimeSpent || 0) + additionalTime;
 
     return user.save();
   }

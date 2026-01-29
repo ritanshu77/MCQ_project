@@ -163,6 +163,17 @@ export class AuthController {
   }
 
   /**
+   * Update session time
+   * POST /auth/session-time
+   */
+  @Post('session-time')
+  @HttpCode(HttpStatus.OK)
+  async updateSessionTime(@Body() body: { userId: string; deviceId: string; time: number }) {
+      await this.authService.updateSessionTime(body.userId, body.deviceId, body.time);
+      return { success: true };
+  }
+
+  /**
    * Update User Profile
    * PUT /auth/profile
    */

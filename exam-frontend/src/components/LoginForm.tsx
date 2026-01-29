@@ -34,6 +34,9 @@ export default function LoginForm() {
         const fp = await FingerprintJS.load();
         const { visitorId } = await fp.get();
         setVisitorId(visitorId);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('deviceId', visitorId);
+        }
       } catch (error) {
         console.error("Fingerprint error:", error);
         const fallbackId = `fallback_${Math.random().toString(36).slice(2)}`;
