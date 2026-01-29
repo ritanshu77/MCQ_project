@@ -193,6 +193,27 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
             margin-left: 8px;
         }
         .reset-btn:hover { background: #d32f2f; }
+        
+        /* Loader Styles */
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            width: 100%;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
       `}</style>
 
       <button onClick={() => router.back()} className="back-btn">
@@ -207,8 +228,8 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
       </div>
 
       {loading ? (
-        <div className="loading">
-          <div style={{ fontSize: 16 }}>Loading sets...</div>
+        <div className="loader-container">
+            <div className="spinner"></div>
         </div>
       ) : chapters.length === 0 ? (
         <div className="empty-state">

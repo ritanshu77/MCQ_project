@@ -57,6 +57,27 @@ export default function TitleSubjectsPage() {
         .code { position: absolute; top: 10px; right: 10px; font-size: 10px; background: #eee; padding: 2px 6px; border-radius: 4px; color: #555; }
         .value { font-size: 20px; font-weight: bold; color: var(--primary-blue); margin: 4px 0; }
         .desc { font-size: 11px; color: #888; }
+        
+        /* Loader Styles */
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            width: 100%;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
       `}</style>
 
       <div className="header">
@@ -67,7 +88,9 @@ export default function TitleSubjectsPage() {
       </div>
 
       {loading ? (
-        <div className="loading">Loading subjects...</div>
+        <div className="loader-container">
+            <div className="spinner"></div>
+        </div>
       ) : subjects.length === 0 ? (
         <div className="loading">No subjects found for this source</div>
       ) : (

@@ -187,6 +187,27 @@ export default function DashboardShell({ user }: { user: User }) {
         .stat-desc { font-size: 11px; color: #888; }
         .loading { text-align: center; padding: 30px; color: #666; }
         
+        /* Loader Styles */
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
+            width: 100%;
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Tabs */
         .tabs { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
         .tab-btn {
@@ -224,7 +245,7 @@ export default function DashboardShell({ user }: { user: User }) {
       {/* TOPICS TAB */}
       {activeTab === 'topics' && (
         loading ? (
-            <div className="loading">Loading subjects...</div>
+            <div className="loader-container"><div className="spinner"></div></div>
         ) : subjects.length === 0 ? (
             <div className="loading">No subjects available</div>
         ) : (
@@ -252,7 +273,7 @@ export default function DashboardShell({ user }: { user: User }) {
       {/* SOURCES TAB */}
       {activeTab === 'sources' && (
         loadingExtras ? (
-            <div className="loading">Loading sources...</div>
+            <div className="loader-container"><div className="spinner"></div></div>
         ) : titles.length === 0 ? (
             <div className="loading">No sources available</div>
         ) : (
@@ -276,7 +297,7 @@ export default function DashboardShell({ user }: { user: User }) {
       {/* EXAMS TAB */}
       {activeTab === 'exams' && (
         loadingExtras ? (
-            <div className="loading">Loading exams...</div>
+            <div className="loader-container"><div className="spinner"></div></div>
         ) : exams.length === 0 ? (
             <div className="loading">No exams available</div>
         ) : (
