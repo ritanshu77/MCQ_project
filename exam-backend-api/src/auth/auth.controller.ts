@@ -6,6 +6,7 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
@@ -48,6 +49,48 @@ export class AuthController {
         message: error.message || 'Login failed',
         error: error.message,
       };
+    }
+  }
+
+  /**
+   * Register permanent user
+   */
+  @Public()
+  @Post('register')
+  @HttpCode(HttpStatus.OK)
+  async register(@Body() body: any) {
+    try {
+        const result = await this.authService.register(body);
+        return {
+            success: true,
+            message: 'Registered successfully',
+            data: result
+        }
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.message || 'Registration failed',
+            error: error.message
+        }
+    }
+  }
+
+  /**
+   * Login permanent user
+   */
+  @Public()
+  @Post('login-user')
+  @HttpCode(HttpStatus.OK)
+  async loginUser(@Body() body: any) {
+    try {
+        const result = await this.authService.loginUser(body);
+        return {
+            success: true,
+            message: 'Logged in successfully',
+            data: result
+        }
+    } catch (error: any) {
+        throw new UnauthorizedException(error.message || 'Login failed');
     }
   }
 

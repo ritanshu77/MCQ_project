@@ -9,13 +9,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, email, mobile } = body;
+    const { name, email, gmail, mobile } = body;
 
-    if (!name || !email || !mobile) {
-        return NextResponse.json({ success: false, message: "Name, Email and Mobile are required" }, { status: 400 });
+    // Support both email and gmail keys
+    const emailToUse = email !== undefined ? email : gmail;
+
+    if (!name || (emailToUse === undefined && mobile === undefined)) {
+        return NextResponse.json({ success: false, message: "Name, and either Email or Mobile are required" }, { status: 400 });
     }
 
-    const backend = process.env.BACKEND_URL;
+    const backend = process.env.BACKEND_URL || "http://localhost:3001"; // Fallback if env missing
     
     // 1. Validate token to get userId
     const validateRes = await fetch(`${backend}/auth/validate-token`, {
@@ -41,11 +44,14 @@ export async function POST(request: NextRequest) {
     // 2. Update Profile
     const updateRes = await fetch(`${backend}/auth/profile`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
             userId,
             name,
-            gmail: email, // Backend uses gmail
+            gmail: emailToUse, // Backend uses gmail
             mobile
         }),
         cache: "no-store",

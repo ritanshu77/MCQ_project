@@ -18,6 +18,9 @@ export class User {
   })
   gmail?: string;
 
+  @Prop({ select: false })
+  password?: string;
+
   @Prop({ index: true })
   browserId?: string;
 

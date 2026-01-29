@@ -8,6 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from '../schemas/core/user.schema';
 
 @Injectable()
@@ -16,6 +17,112 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtService: JwtService,
   ) {}
+
+  /**
+   * Register a permanent user
+   */
+  async register(registerData: {
+    name: string;
+    email?: string;
+    mobile?: string;
+    password?: string;
+    deviceId?: string;
+  }): Promise<{ user: any; token: string }> {
+    const { name, email, mobile, password } = registerData;
+
+    if (!name) throw new BadRequestException('Name is required');
+    if (!email && !mobile) throw new BadRequestException('Email or Mobile is required');
+    if (!password) throw new BadRequestException('Password is required');
+
+    // Check if user exists
+    const query: { $or: any[] } = { $or: [] };
+    if (email) query.$or.push({ gmail: email });
+    if (mobile) query.$or.push({ mobile: mobile });
+
+    if (query.$or.length > 0) {
+      const existingUser = await this.userModel.findOne(query);
+      if (existingUser) {
+        throw new ConflictException('User with this email/mobile already exists');
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new this.userModel({
+      name,
+      gmail: email,
+      mobile,
+      password: hashedPassword,
+      type: 'registered',
+      sessions: [],
+    });
+
+    if (registerData.deviceId) {
+      user.sessions.push({
+        deviceId: registerData.deviceId,
+        lastActive: new Date(),
+        totalTime: 0,
+      });
+    }
+
+    await user.save();
+    const token = await this.generateToken(user._id.toString());
+
+    return {
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.gmail,
+            mobile: user.mobile,
+            type: user.type,
+        },
+        token
+    };
+  }
+
+  /**
+   * Login for permanent users (with password)
+   */
+  async loginUser(loginData: {
+    identifier: string; // email or mobile
+    password: string;
+    deviceId?: string;
+  }): Promise<{ user: any; token: string }> {
+    const { identifier, password } = loginData;
+
+    // Find user by email or mobile
+    const user = await this.userModel.findOne({
+      $or: [{ gmail: identifier }, { mobile: identifier }],
+    }).select('+password');
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (!user.password) {
+        throw new UnauthorizedException('Please login via other method (no password set)');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Update sessions/activity if needed (skipping for brevity)
+
+    const token = await this.generateToken(user._id.toString());
+
+    return {
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.gmail,
+            mobile: user.mobile,
+            type: user.type,
+        },
+        token
+    };
+  }
 
   /**
    * Login with name and device information from frontend
@@ -177,16 +284,48 @@ export class AuthService {
   /**
    * Update user profile
    */
-  async updateProfile(userId: string, updateData: { name: string; mobile: string; gmail: string }) {
+  async updateProfile(userId: string, updateData: { name: string; mobile?: string; gmail?: string }) {
+    const { name, gmail, mobile } = updateData;
+
+    if (!name) throw new BadRequestException('Name is required');
+    if (!gmail && !mobile) throw new BadRequestException('Either Email or Mobile is required');
+
+    // Check if email/mobile is already taken by ANOTHER user
+    const query: { $or: any[]; _id: { $ne: string } } = { 
+        $or: [],
+        _id: { $ne: userId }
+    };
+    if (gmail) query.$or.push({ gmail: gmail });
+    if (mobile) query.$or.push({ mobile: mobile });
+
+    if (query.$or.length > 0) {
+        const existingUser = await this.userModel.findOne(query);
+        if (existingUser) {
+            throw new ConflictException('Email or Mobile already in use by another account');
+        }
+    }
+
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    user.name = updateData.name;
-    user.mobile = updateData.mobile;
-    user.gmail = updateData.gmail;
-    user.type = 'registered'; // Upgrade to registered if they update profile? Or just keep it. User asked to create separate model but I am using existing. I will mark as registered if they provide details.
+    user.name = name;
+    
+    // Handle email update (allow clearing if empty string provided)
+    if (updateData.gmail !== undefined) {
+        user.gmail = updateData.gmail ? updateData.gmail : undefined;
+    }
+    
+    // Handle mobile update (allow clearing if empty string provided)
+    if (updateData.mobile !== undefined) {
+        user.mobile = updateData.mobile ? updateData.mobile : undefined;
+    }
+    
+    // Upgrade guest to registered if they add contact info
+    if (user.type === 'guest' && (user.gmail || user.mobile)) {
+        user.type = 'registered';
+    }
     
     return await user.save();
   }

@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState("");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -25,9 +26,10 @@ export default function ProfilePage() {
       setLoading(true);
       const { data } = await axios.get("/api/auth/me");
       if (data.success && data.user) {
+        setUserId(data.user.id || data.user._id);
         setFormData({
           name: typeof data.user.name === 'string' ? data.user.name : (data.user.name?.en || ""),
-          email: data.user.email || "",
+          email: data.user.email || data.user.gmail || "",
           mobile: data.user.mobile || ""
         });
       }
@@ -42,14 +44,26 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.mobile) {
-      toast("All fields are mandatory", "error");
+    if (!formData.name.trim()) {
+      toast("Name is required", "error");
+      return;
+    }
+
+    if (!formData.email.trim() && !formData.mobile.trim()) {
+      toast("Either Email or Mobile number is required", "error");
       return;
     }
 
     try {
       setSaving(true);
-      const { data } = await axios.post("/api/auth/profile", formData);
+      const payload = {
+        userId,
+        name: formData.name,
+        gmail: formData.email,
+        mobile: formData.mobile
+      };
+
+      const { data } = await axios.post("/api/auth/profile", payload);
       
       if (data.success) {
         toast("Profile updated successfully", "success");
@@ -150,26 +164,25 @@ export default function ProfilePage() {
           </div>
 
           <div className="form-group">
-            <label className="label">Email Address *</label>
+            <label className="label">Email Address</label>
+            {/* <div style={{fontSize: '12px', color: '#666', marginBottom: '4px'}}>Either Email or Mobile is required</div> */}
             <input
               type="email"
               className="input"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="Enter your email"
-              required
             />
           </div>
 
           <div className="form-group">
-            <label className="label">Mobile Number *</label>
+            <label className="label">Mobile Number</label>
             <input
               type="tel"
               className="input"
               value={formData.mobile}
               onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
               placeholder="Enter your mobile number"
-              required
             />
           </div>
 
