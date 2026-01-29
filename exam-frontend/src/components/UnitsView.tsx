@@ -79,7 +79,7 @@ export default function UnitsView({
         .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
         .units-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
         .unit-card { 
-          background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+          background: white; padding: 4px 7px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
           border-left: 4px solid #10b981; cursor: pointer; transition: all 0.3s;
         }
         .unit-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }

@@ -257,7 +257,7 @@ export default function DashboardShell({ user }: { user: User }) {
                 className="stat-card"
                 >
                 <div className="stat-title">{subject.nameEn}</div>
-                <h3 className="stat-value">{subject.totalQuestions.toLocaleString()}</h3>
+                <h3 className="stat-value">{subject.totalQuestions.toLocaleString()} Questions</h3>
                 <p className="stat-desc">
                     {subject.easy} Easy • {subject.medium} Medium • {subject.hard} Hard
                 </p>
