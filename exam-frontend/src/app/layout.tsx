@@ -5,6 +5,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ToastContainer from "../components/Toast";
 import ServerStatus from "@/components/ServerStatus";
+import AuthGuard from "@/components/AuthGuard";
+import TimeTracker from "@/components/TimeTracker";
 
 
 const geistSans = Geist({
@@ -32,9 +34,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ServerStatus />
-        <ToastContainer />
-        {children}
+        <AuthGuard>
+          <ServerStatus />
+          <ToastContainer />
+          <TimeTracker />
+          {children}
+        </AuthGuard>
       </body>
     </html>
   );

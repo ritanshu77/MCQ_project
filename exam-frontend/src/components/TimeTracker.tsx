@@ -27,11 +27,13 @@ export default function TimeTracker() {
 
         // Get User ID
         try {
-            const res = await fetch('/api/auth/me');
+            const res = await fetch('/api/auth/me', {
+                credentials: 'include' // Ensure cookies are sent
+            });
             if (res.ok) {
                 const data = await res.json();
                 if (data.success && data.user) {
-                    userIdRef.current = data.user.id;
+                    userIdRef.current = data.user.id || data.user._id;
                 }
             }
         } catch (err) {

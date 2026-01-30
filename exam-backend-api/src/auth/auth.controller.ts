@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
@@ -166,11 +167,22 @@ export class AuthController {
    * Update session time
    * POST /auth/session-time
    */
+  @Public()
   @Post('session-time')
   @HttpCode(HttpStatus.OK)
   async updateSessionTime(@Body() body: { userId: string; deviceId: string; time: number }) {
       await this.authService.updateSessionTime(body.userId, body.deviceId, body.time);
       return { success: true };
+  }
+
+  /**
+   * Get Current User
+   * GET /auth/me
+   */
+  @Get('me')
+  @HttpCode(HttpStatus.OK)
+  async getMe(@Request() req) {
+      return { success: true, user: req.user };
   }
 
   /**
