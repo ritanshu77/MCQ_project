@@ -60,6 +60,7 @@ export class QuestionSet {
     enum: ['title', 'chapter', 'exam', 'practice', 'unit', 'title-chapter'],
     default: 'title',
     required: true,
+    index: true,
   })
   quizType: string; // title/chapter/exam/practice
 }

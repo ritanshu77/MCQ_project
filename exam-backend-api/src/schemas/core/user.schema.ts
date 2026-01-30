@@ -9,12 +9,14 @@ export class User {
   @Prop({
     type: String,
     sparse: true,
+    unique: true,
   })
   mobile?: string;
 
   @Prop({
     type: String,
     sparse: true,
+    unique: true,
   })
   gmail?: string;
 

@@ -24,7 +24,7 @@ export class Exam {
   @Prop({ type: NameSchema, required: true })
   name: NameSchema;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   year: number;
 
   @Prop({ default: true })

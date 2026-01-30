@@ -1,4 +1,4 @@
-﻿import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Question } from '../exam-bank/question.schema';
 import { QuestionSet } from '../exam-bank/question-set.schema';
@@ -68,13 +68,13 @@ export class TestResult {
   @Prop({ enum: ['title', 'exam', 'chapter', 'title-chapter', 'institute-chapter'], required: true })
   quizType: string;
 
-  @Prop({ type: Types.ObjectId, ref: Title.name })
+  @Prop({ type: Types.ObjectId, ref: Title.name, index: true })
   titleId?: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: Exam.name })
+  @Prop({ type: Types.ObjectId, ref: Exam.name, index: true })
   examId?: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: Chapter.name })
+  @Prop({ type: Types.ObjectId, ref: Chapter.name, index: true })
   chapterId?: Types.ObjectId;
 
   @Prop({ type: [WeakAreaSchema], default: [] })
@@ -82,6 +82,12 @@ export class TestResult {
 
   @Prop({ default: false })
   isReset: boolean;
+
+  @Prop({ index: true })
+  createdAt?: Date;
+
+  @Prop()
+  updatedAt?: Date;
 }
 
 export type TestResultDocument = TestResult & Document;

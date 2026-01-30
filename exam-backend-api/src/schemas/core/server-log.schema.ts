@@ -9,7 +9,7 @@ export class ServerLog {
   @Prop({ required: true })
   instanceId: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   startTime: Date;
 
   @Prop()
