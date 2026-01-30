@@ -13,6 +13,7 @@ import databaseConfig from './config/database.config';
 import { GlobalDatabaseModule } from './database/global.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth/jwt-auth.guard';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { MonitorModule } from './monitor/monitor.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     DatabaseModule,
     AuthModule,
     AttemptsModule,
+    MonitorModule,
   ],
   controllers: [AppController],
   providers: [

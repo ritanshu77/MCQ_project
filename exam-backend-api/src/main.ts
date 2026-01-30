@@ -12,6 +12,9 @@ async function bootstrap() {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
 
+  // Enable graceful shutdown
+  app.enableShutdownHooks();
+
   app.use(cookieParser());
 
   // FIXED CORS - COMPLETE CONFIG
