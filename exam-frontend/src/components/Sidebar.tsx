@@ -12,10 +12,16 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
 
   return (
     <div className={`sidebar ${isOpen ? 'active' : ''}`} id="sidebar">
-      <Link href="/dashboard" className="nav-link active" onClick={closeSidebar}>
-        🏠 Dashboard
-      </Link>
-      <a
+      <div className="sidebar-header">
+        <div className="sidebar-brand">Quiz App</div>
+        <button className="sidebar-close-btn" onClick={closeSidebar}>&times;</button>
+      </div>
+      
+      <div className="sidebar-content">
+        <Link href="/dashboard" className="nav-link active" onClick={closeSidebar}>
+          🏠 Dashboard
+        </Link>
+        <a
         href="#"
         className="nav-link"
         onClick={(e) => {
@@ -61,6 +67,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
       >
         🚪 Logout
       </a>
+      </div>
     </div>
   );
 }

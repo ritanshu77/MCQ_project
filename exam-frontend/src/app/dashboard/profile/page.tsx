@@ -44,23 +44,39 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
+    const name = formData.name.trim();
+    const mobile = formData.mobile.trim();
+
+    if (!name) {
       toast("Name is required", "error");
       return;
     }
+    if (name.length < 3 || name.length > 50) {
+        toast("Name must be between 3 and 50 characters", "error");
+        return;
+    }
+    if (!/^[a-zA-Z\s\.]+$/.test(name)) {
+        toast("Name can only contain letters, spaces, and dots", "error");
+        return;
+    }
 
-    if (!formData.email.trim() && !formData.mobile.trim()) {
+    if (!formData.email.trim() && !mobile) {
       toast("Either Email or Mobile number is required", "error");
       return;
+    }
+
+    if (mobile && !/^\d{10}$/.test(mobile)) {
+        toast("Mobile number must be exactly 10 digits", "error");
+        return;
     }
 
     try {
       setSaving(true);
       const payload = {
         userId,
-        name: formData.name,
-        gmail: formData.email,
-        mobile: formData.mobile
+        name: name,
+        gmail: formData.email.trim(),
+        mobile: mobile
       };
 
       const { data } = await axios.post("/api/auth/profile", payload);

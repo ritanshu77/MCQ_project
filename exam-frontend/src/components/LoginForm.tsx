@@ -109,6 +109,16 @@ export default function LoginForm() {
       };
 
       if (isRegistering) {
+        // Validation
+        if (userName.length < 3 || userName.length > 50) {
+            toast("Name must be between 3 and 50 characters", "error");
+            setLoading(false); return;
+        }
+        if (!/^[a-zA-Z\s\.]+$/.test(userName)) {
+            toast("Name can only contain letters, spaces, and dots", "error");
+            setLoading(false); return;
+        }
+
         payload.name = userName;
         payload.password = userPassword;
         
@@ -119,6 +129,11 @@ export default function LoginForm() {
             toast("Either Email or Mobile is required", "error");
             setLoading(false);
             return;
+        }
+
+        if (mobile && !/^\d{10}$/.test(mobile)) {
+            toast("Mobile number must be exactly 10 digits", "error");
+            setLoading(false); return;
         }
 
         if (email) payload.email = email;

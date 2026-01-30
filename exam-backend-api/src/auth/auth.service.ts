@@ -19,6 +19,27 @@ export class AuthService {
   ) {}
 
   /**
+   * Helper to validate name and mobile format
+   */
+  private validateInput(name: string, mobile?: string) {
+    // Name validation: 3-50 chars, letters, spaces, dots
+    if (name.length < 3 || name.length > 50) {
+      throw new BadRequestException('Name must be between 3 and 50 characters');
+    }
+    if (!/^[a-zA-Z\s\.]+$/.test(name)) {
+      throw new BadRequestException('Name can only contain letters, spaces, and dots');
+    }
+
+    // Mobile validation: exactly 10 digits
+    if (mobile) {
+      const cleanMobile = mobile.trim();
+      if (!/^\d{10}$/.test(cleanMobile)) {
+        throw new BadRequestException('Mobile number must be exactly 10 digits');
+      }
+    }
+  }
+
+  /**
    * Register a permanent user
    */
   async register(registerData: {
@@ -33,6 +54,8 @@ export class AuthService {
     if (!name) throw new BadRequestException('Name is required');
     if (!email && !mobile) throw new BadRequestException('Email or Mobile is required');
     if (!password) throw new BadRequestException('Password is required');
+
+    this.validateInput(name, mobile);
 
     // Check if user exists
     const query: { $or: any[] } = { $or: [] };
@@ -293,6 +316,8 @@ export class AuthService {
 
     if (!name) throw new BadRequestException('Name is required');
     if (!gmail && !mobile) throw new BadRequestException('Either Email or Mobile is required');
+
+    this.validateInput(name, mobile);
 
     // Check if email/mobile is already taken by ANOTHER user
     const query: { $or: any[]; _id: { $ne: string } } = { 

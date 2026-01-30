@@ -72,10 +72,58 @@ body {
     backdrop-filter: blur(2px);
 }
 
+/* Sidebar header styles - hidden by default (desktop) */
+.sidebar-header { display: none; }
+
 @media (max-width: 768px) {
   .toggle-btn { display: block; }
-  .sidebar { position: fixed; left: -260px; height: 100%; z-index: 2000; box-shadow: 5px 0 15px rgba(0,0,0,0.1); width: 250px; }
-  .sidebar.active { left: 0; }
+  /* Updated Sidebar for Mobile: Top 0, full height, attractive header */
+  .sidebar { 
+      position: fixed !important; 
+      left: -280px; 
+      top: 0 !important; 
+      height: 100vh !important; 
+      z-index: 9999 !important; 
+      box-shadow: 5px 0 15px rgba(0,0,0,0.1); 
+      width: 260px !important; 
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      background: white !important;
+  }
+  .sidebar.active { left: 0 !important; }
+  
+  /* Show header only on mobile */
+  .sidebar-header {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 60px; /* Match navbar height */
+      background: var(--primary-blue);
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+  }
+  .sidebar-brand {
+      font-weight: 700;
+      font-size: 1.2rem;
+  }
+  .sidebar-close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+  }
+  
+  .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 0;
+  }
+  
   .main-content { padding: 7px; }
   .stats-grid { grid-template-columns: 1fr; }
   .test-item { flex-direction: column; align-items: flex-start; gap: 12px; }
