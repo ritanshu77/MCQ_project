@@ -33,7 +33,8 @@ export default function TimeTracker() {
             if (res.ok) {
                 const data = await res.json();
                 if (data.success && data.user) {
-                    userIdRef.current = data.user.id || data.user._id;
+                    // Support different user object structures
+                    userIdRef.current = data.user.id || data.user._id || data.user.userId;
                 }
             }
         } catch (err) {

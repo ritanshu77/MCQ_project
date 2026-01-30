@@ -131,7 +131,20 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Update sessions/activity if needed (skipping for brevity)
+    // Update sessions/activity
+    if (loginData.deviceId) {
+        const sessionIndex = user.sessions.findIndex(s => s.deviceId === loginData.deviceId);
+        if (sessionIndex > -1) {
+            user.sessions[sessionIndex].lastActive = new Date();
+        } else {
+            user.sessions.push({
+                deviceId: loginData.deviceId,
+                lastActive: new Date(),
+                totalTime: 0
+            });
+        }
+        await user.save();
+    }
 
     const token = await this.generateToken(user._id.toString());
 
@@ -292,6 +305,7 @@ export class AuthService {
     const user = await this.userModel.findById(userId);
 
     if (!user) {
+      console.warn(`updateSessionTime: User ${userId} not found`);
       throw new NotFoundException('User not found');
     }
 
@@ -300,11 +314,19 @@ export class AuthService {
     if (session) {
       session.totalTime += additionalTime;
       session.lastActive = new Date();
+    } else {
+        // Create new session if missing (robustness)
+        console.log(`updateSessionTime: Creating new session for user ${userId} device ${deviceId}`);
+        user.sessions.push({
+            deviceId,
+            lastActive: new Date(),
+            totalTime: additionalTime
+        });
     }
 
     // Update global totalTimeSpent
     user.totalTimeSpent = (user.totalTimeSpent || 0) + additionalTime;
-
+    
     return user.save();
   }
 
