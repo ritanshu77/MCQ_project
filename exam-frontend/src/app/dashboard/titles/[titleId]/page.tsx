@@ -50,7 +50,7 @@ export default function TitleSubjectsPage() {
   return (
     <div className="max-w-6xl mx-auto p-2">
       <style>{`
-        .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
+        .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
         .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); border-left: 4px solid #8e44ad; text-decoration: none; display: block; }
         .card:hover { transform: translateY(-2px); transition: transform .2s; }
@@ -58,6 +58,23 @@ export default function TitleSubjectsPage() {
         .value { font-size: 20px; font-weight: bold; color: var(--primary-blue); margin: 4px 0; }
         .desc { font-size: 11px; color: #888; }
         
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #f5f5f5;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+        .back-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
         /* Loader Styles */
         .loader-container {
             display: flex;
@@ -81,8 +98,11 @@ export default function TitleSubjectsPage() {
       `}</style>
 
       <div className="header">
+        <Link href="/dashboard" className="back-btn">
+             ← Back to Dashboard
+        </Link>
         <h1>Subjects by Source</h1>
-        <p style={{ color: "#666", fontSize: 13, margin: "0 0 10px 0" }}>
+        <p style={{ color: "#666", fontSize: 13, margin: "4px 0 10px 0" }}>
           {loading ? "Loading..." : `${subjects.length} subjects available`}
         </p>
       </div>
