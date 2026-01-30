@@ -4,12 +4,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ServerLog, ServerLogDocument } from '../schemas/core/server-log.schema';
 import * as crypto from 'crypto';
+import axios from 'axios';
 
 @Injectable()
 export class MonitorService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MonitorService.name);
   private instanceId: string;
   private heartbeatInterval: NodeJS.Timeout;
+  private pingInterval: NodeJS.Timeout;
 
   constructor(
     @InjectModel(ServerLog.name) private serverLogModel: Model<ServerLogDocument>,
@@ -48,11 +50,18 @@ export class MonitorService implements OnModuleInit, OnModuleDestroy {
 
     // 3. Start Heartbeat (every 30 seconds)
     this.heartbeatInterval = setInterval(() => this.sendHeartbeat(), 30000);
+
+    // 4. Start Self-Ping (every 14 minutes) to keep Render awake
+    // Render sleeps after 15 mins of inactivity.
+    this.pingInterval = setInterval(() => this.pingSelf(), 14 * 60 * 1000);
+    // Initial ping after 10 seconds to verify URL
+    setTimeout(() => this.pingSelf(), 10000);
   }
 
   async onModuleDestroy() {
     this.logger.log('Server stopping...');
     clearInterval(this.heartbeatInterval);
+    clearInterval(this.pingInterval);
     
     await this.serverLogModel.findOneAndUpdate(
       { instanceId: this.instanceId },
@@ -73,6 +82,27 @@ export class MonitorService implements OnModuleInit, OnModuleDestroy {
       ).exec();
     } catch (err) {
       this.logger.error('Failed to update heartbeat', err);
+    }
+  }
+
+  private async pingSelf() {
+    try {
+        const port = process.env.BACKEND_PORT || 3001;
+        const url = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL || `http://127.0.0.1:${port}`;
+        
+        // Ensure url doesn't end with slash if we append /health
+        const healthUrl = url.endsWith('/') ? `${url}health` : `${url}/health`;
+        
+        this.logger.log(`Pinging self at ${healthUrl} to keep awake...`);
+        const res = await axios.get(healthUrl);
+        
+        if (res.status === 200) {
+            this.logger.log('Self-ping successful.');
+        } else {
+            this.logger.warn(`Self-ping returned status ${res.status}`);
+        }
+    } catch (err) {
+        this.logger.error('Self-ping failed:', err.message);
     }
   }
 }
