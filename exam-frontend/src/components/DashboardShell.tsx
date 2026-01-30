@@ -61,37 +61,7 @@ export default function DashboardShell({ user }: { user: User }) {
       console.log("Could not read document.cookie", e);
     }
     
-    function handleClick(event: MouseEvent) {
-      const sidebar = document.getElementById("sidebar");
-      const btn = document.querySelector(".toggle-btn");
-      if (!sidebar || !btn) return;
-      const target = event.target as Node | null;
-
-      if (
-        window.innerWidth <= 768 &&
-        sidebar.classList.contains("active") &&
-        target &&
-        !sidebar.contains(target) &&
-        target !== btn
-      ) {
-        sidebar.classList.remove("active");
-      }
-
-      if (
-        window.innerWidth <= 768 &&
-        sidebar.classList.contains("active") &&
-        target &&
-        sidebar.contains(target)
-      ) {
-         const link = (target as HTMLElement).closest('a');
-         if (link) {
-            sidebar.classList.remove("active");
-         }
-      }
-    }
-
-    window.addEventListener("click", handleClick);
-    return () => window.removeEventListener("click", handleClick);
+    // Legacy sidebar logic removed - now handled by DashboardLayout
   }, []);
 
   useEffect(() => {

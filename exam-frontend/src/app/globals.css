@@ -60,6 +60,18 @@ body {
 .progress-fill { height: 100%; border-radius: 10px; }
 .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; display: block; }
 
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1500; /* Between Navbar (1000) and Sidebar (2000) - wait, Sidebar needs to be higher */
+    backdrop-filter: blur(2px);
+}
+
 @media (max-width: 768px) {
   .toggle-btn { display: block; }
   .sidebar { position: fixed; left: -260px; height: 100%; z-index: 2000; box-shadow: 5px 0 15px rgba(0,0,0,0.1); width: 250px; }
@@ -69,4 +81,8 @@ body {
   .test-item { flex-direction: column; align-items: flex-start; gap: 12px; }
   .btn-start { width: 100%; text-align: center; }
   .welcome-msg h1 { font-size: 1.3rem; }
+  
+  .sidebar-overlay.active {
+      display: block;
+  }
 }

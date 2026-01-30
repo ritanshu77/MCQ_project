@@ -2,15 +2,16 @@
 import Link from "next/link";
 import { toast } from "./Toast";
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const closeSidebar = () => {
+    if (onClose) onClose();
     if (window.innerWidth <= 768) {
       document.getElementById("sidebar")?.classList.remove("active");
     }
   };
 
   return (
-    <div className="sidebar" id="sidebar">
+    <div className={`sidebar ${isOpen ? 'active' : ''}`} id="sidebar">
       <Link href="/dashboard" className="nav-link active" onClick={closeSidebar}>
         🏠 Dashboard
       </Link>
