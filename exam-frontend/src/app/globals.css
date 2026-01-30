@@ -52,7 +52,7 @@ body {
 .stat-card h3, .stat-card .stat-value { margin: 0; font-size: 18px; font-weight: bold; }
 .stat-card .stat-title { color: #0f1010; font-weight: 600; font-size: 15px; margin-bottom: 0px; }
 .stat-card p, .stat-card .stat-desc { margin: 0 0 0; color: #777; font-size: 12px; }
-.card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%; }
+.card { background: white; padding: 7px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%; }
 .test-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; gap: 10px; }
 .test-item:last-child { border: 0; }
 .btn-start { background: var(--primary-blue); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; white-space: nowrap; flex-shrink: 0; }
@@ -64,7 +64,7 @@ body {
   .toggle-btn { display: block; }
   .sidebar { position: fixed; left: -260px; height: 100%; z-index: 2000; box-shadow: 5px 0 15px rgba(0,0,0,0.1); width: 250px; }
   .sidebar.active { left: 0; }
-  .main-content { padding: 15px; }
+  .main-content { padding: 7px; }
   .stats-grid { grid-template-columns: 1fr; }
   .test-item { flex-direction: column; align-items: flex-start; gap: 12px; }
   .btn-start { width: 100%; text-align: center; }
