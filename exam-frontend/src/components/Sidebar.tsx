@@ -22,51 +22,76 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           🏠 Dashboard
         </Link>
         <a
-        href="#"
-        className="nav-link"
-        onClick={(e) => {
-          e.preventDefault();
-          toast("Work in progress", "info");
-          closeSidebar();
-        }}
-      >
-        📝 My Tests
-      </a>
-      <a
-        href="#"
-        className="nav-link"
-        onClick={(e) => {
-          e.preventDefault();
-          toast("Work in progress", "info");
-          closeSidebar();
-        }}
-      >
-        📊 Performance
-      </a>
-      <Link href="/dashboard/profile" className="nav-link" onClick={closeSidebar}>
-        👤 Profile
-      </Link>
-      <a
-        href="#"
-        className="nav-link"
-        style={{ color: "var(--error-red)", marginTop: 30 }}
-        onClick={(e) => {
-          e.preventDefault();
-          closeSidebar();
-          try {
+          href="#"
+          className="nav-link"
+          onClick={(e) => {
+            e.preventDefault();
+            toast("Work in progress", "info");
+            closeSidebar();
+          }}
+        >
+          📝 My Tests
+        </a>
+        <a
+          href="#"
+          className="nav-link"
+          onClick={(e) => {
+            e.preventDefault();
+            toast("Work in progress", "info");
+            closeSidebar();
+          }}
+        >
+          📊 Performance
+        </a>
+        <a
+          href="#"
+          className="nav-link"
+          onClick={(e) => {
+            e.preventDefault();
+            toast("Work in progress", "info");
+            closeSidebar();
+          }}
+        >
+          🏆 Leaderboard
+        </a>
+        <Link href="/dashboard/profile" className="nav-link" onClick={closeSidebar}>
+          👤 Profile
+        </Link>
+        <a
+          href="#"
+          className="nav-link"
+          onClick={(e) => {
+            e.preventDefault();
+            toast("Work in progress", "info");
+            closeSidebar();
+          }}
+        >
+          ⚙️ Settings
+        </a>
+        
+        <div style={{ flex: 1 }}></div>
+
+        <a
+          href="#"
+          className="nav-link"
+          style={{ color: "var(--error-red)", borderTop: "1px solid #eee", paddingTop: 15 }}
+          onClick={(e) => {
+            e.preventDefault();
+            closeSidebar();
             try {
-              document.cookie = "id=; Max-Age=0; path=/; SameSite=Lax";
-              document.cookie = "token=; Max-Age=0; path=/; SameSite=Lax";
-            } catch {}
-            fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-            toast("Logged out", "success");
-          } finally {
-            window.location.href = "/login";
-          }
-        }}
-      >
-        🚪 Logout
-      </a>
+              try {
+                document.cookie = "id=; Max-Age=0; path=/; SameSite=Lax";
+                document.cookie = "token=; Max-Age=0; path=/; SameSite=Lax";
+              } catch {}
+              fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+              toast("Logged out", "success");
+            } finally {
+              window.location.href = "/login";
+            }
+          }}
+        >
+          🚪 Logout
+        </a>
       </div>
     </div>
   );
