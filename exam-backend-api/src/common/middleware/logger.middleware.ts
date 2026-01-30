@@ -13,6 +13,11 @@ export class LoggerMiddleware implements NestMiddleware {
       const { statusCode } = res;
       const contentLength = res.get('content-length');
 
+      // Skip logging for health checks and session-time to reduce noise
+      // if (originalUrl.includes('/health') || originalUrl.includes('/auth/session-time')) {
+      //   return;
+      // }
+
       this.logger.log(
         `${method} ${originalUrl} ${statusCode} ${contentLength} - ${userAgent} ${ip}`,
       );
