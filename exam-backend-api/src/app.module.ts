@@ -14,9 +14,15 @@ import { GlobalDatabaseModule } from './database/global.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth/jwt-auth.guard';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { MonitorModule } from './monitor/monitor.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    //  Rate Limiting: 100 requests per minute per IP
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 100,
+    }]),
     //  Load ALL custom config files globally
     ConfigModule.forRoot({
       isGlobal: true,
@@ -71,6 +77,10 @@ import { MonitorModule } from './monitor/monitor.module';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

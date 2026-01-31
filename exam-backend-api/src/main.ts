@@ -2,15 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
+import { Request, Response } from 'express';
 
 // Set Timezone to India Standard Time (IST)
 process.env.TZ = 'Asia/Kolkata';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
+
+  // Trust proxy for Throttler (Render/Cloudflare etc)
+  app.set('trust proxy', 1);
 
   // Enable graceful shutdown
   app.enableShutdownHooks();
@@ -49,7 +54,7 @@ async function bootstrap() {
   const httpAdapter = app.getHttpAdapter();
 
   // Health check endpoint for Render (no authentication needed)
-  httpAdapter.get('/health', (req, res) => {
+  httpAdapter.get('/health', (req:Request, res:Response) => {
     console.log(
       `[Health Check] Ping received from ${req.headers.origin || 'unknown origin'} at ${new Date().toISOString()}`,
     );
@@ -63,7 +68,7 @@ async function bootstrap() {
   });
 
   // Root endpoint
-  httpAdapter.get('/', (req, res) => {
+  httpAdapter.get('/', (req: Request, res: Response) => {
     res.json({
       message: 'Exam Bank API',
       version: '1.0',
