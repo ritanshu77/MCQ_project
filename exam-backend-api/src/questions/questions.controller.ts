@@ -1,4 +1,4 @@
-﻿import {
+import {
   Controller,
   Post,
   Body,
@@ -22,6 +22,7 @@ export class QuestionsController {
     private readonly attemptsService: AttemptsService,
   ) {}
 
+  @Public()
   @Post('bulk')
   async bulkCreateQuestions(@Body() dto: BulkCreateQuestionsDto) {
     return await this.questionsService.bulkCreateQuestions(dto);

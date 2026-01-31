@@ -370,8 +370,8 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                     position: sticky; top: 0; z-index: 1000;
                 }
                 .toggle-btn { font-size: 24px; cursor: pointer; border: none; background: none; display: none; color: #333; }
-                .wrapper { display: flex; padding: 10px; gap: 10px; width: 100%; margin: 0; flex: 1; }
-                .main-content { flex: 3; min-width: 0; }
+                .quiz-wrapper { display: flex; padding: 10px; gap: 10px; width: 100%; margin: 0; flex: 1; flex-direction: row; }
+                .quiz-main { flex: 3; min-width: 0; }
                 .card { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 12px; }
                 .option { padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-top: 8px; cursor: pointer; transition: 0.2s; font-weight: 500; }
                 .option:hover { background: #f9f9f9; }
@@ -388,7 +388,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                     color: white !important; 
                 }
 
-                .sidebar { 
+                .quiz-sidebar { 
                     flex: 1; 
                     min-width: 280px; 
                     transition: right 0.3s ease;
@@ -418,9 +418,9 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                 
                 @media (max-width: 992px) {
                     .toggle-btn { display: block; }
-                    .wrapper { flex-direction: column; padding: 0px; gap: 8px; }
-                    .main-content { width: 100%; max-width: none; margin: 0; }
-                    .sidebar { 
+                    .quiz-wrapper { flex-direction: column; padding: 0px; gap: 8px; }
+                    .quiz-main { width: 100%; max-width: none; margin: 0; }
+                    .quiz-sidebar { 
                         position: fixed; 
                         top: var(--topbar); 
                         right: -100%; 
@@ -438,7 +438,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                         overflow: hidden;
                         border-bottom-left-radius: 8px;
                     }
-                    .sidebar.active { right: 0; }
+                    .quiz-sidebar.active { right: 0; }
                     .palette-scroll { height: auto; overflow-y: auto; flex: 1; min-height: 0; }
                     .palette { grid-template-columns: repeat(5, 1fr); }
                 }
@@ -450,8 +450,8 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
             </nav>
             {mobilePanelOpen && <div className="mobile-overlay" onClick={() => setMobilePanelOpen(false)} />}
 
-            <div className="wrapper">
-                <div className="main-content" onClick={() => { if (mobilePanelOpen) setMobilePanelOpen(false); }}>
+            <div className="quiz-wrapper">
+                <div className="quiz-main" onClick={() => { if (mobilePanelOpen) setMobilePanelOpen(false); }}>
                         {currentQuestion && (
                             <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '8px', paddingBottom: '4px' }}>
                                 <span>{currentQuestion.subjectDetails?.name?.en || ''}</span>
@@ -551,7 +551,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                     )}
 
                 </div>
-                <div className={`sidebar ${mobilePanelOpen ? 'active' : ''}`}>
+                <div className={`quiz-sidebar ${mobilePanelOpen ? 'active' : ''}`}>
                     <div className="card">
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                             <div style={{ width: '35px', height: '35px', background: '#ff5252', borderRadius: '50%', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
