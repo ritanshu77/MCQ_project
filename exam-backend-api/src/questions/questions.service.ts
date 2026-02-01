@@ -282,11 +282,14 @@ export class QuestionsService {
         // Create Chapter Sets (Global)
         const chapterId = new Types.ObjectId(chapterIdStr);
         if (chapterId) {
-          await this.createQuestionSets(
-            { chapterId, quizType: 'chapter' },
-            questions,
-          );
-          results.setsCreated++;
+          // ✅ CHECK FLAG: Skip global sets if requested
+          if (!dto.excludeFromGlobalChapterSets) {
+            await this.createQuestionSets(
+              { chapterId, quizType: 'chapter' },
+              questions,
+            );
+            results.setsCreated++;
+          }
 
           // Create Title-Chapter Sets (Specific to this Title)
           if (titleId) {

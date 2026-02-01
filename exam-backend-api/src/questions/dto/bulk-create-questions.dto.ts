@@ -112,6 +112,10 @@ export class BulkCreateQuestionsDto {
   @IsString()
   exam?: string; // "RAS 2025 Mains"
 
+  @IsOptional()
+  @IsBoolean()
+  excludeFromGlobalChapterSets?: boolean; // ✅ If true, skip global 'chapter' sets
+
   @ValidateNested({ each: true })
   @IsArray()
   @Type(() => QuestionDto)
