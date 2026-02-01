@@ -82,11 +82,12 @@ export class QuestionsService {
         $or: [{ 'name.hi': dto.exam }, { 'name.en': dto.exam }],
       });
       if (!exam) {
-        exam = await this.examModel.create({
+        let insertExamObject = {
           code: this.generateCode(dto.exam, 'E_'),
-          name: { hi: dto.exam, en: dto.exam },
-          year: new Date().getFullYear(),
-        });
+          name: { hi: dto.exam, en: dto.exam }
+        }
+        //  year insertExamObjectnew Date().getFullYear(), // year was include n exam name
+        exam = await this.examModel.create(insertExamObject);
         results.examsCreated++;
       }
       examId = exam._id;
@@ -182,12 +183,14 @@ export class QuestionsService {
         }
 
         // Duplicate check
-        const existingQuestion = await this.questionModel.findOne({
-          titleId,
+        const questioncheckobject: any = {
           chapterId: chapterCache[chapterKey],
           'questionText.hi': q.questionTextHi,
           'questionText.en': q.questionTextEn,
-        });
+        };
+        if (examId) questioncheckobject.examId = examId;
+        if (titleId) questioncheckobject.titleId = titleId;
+        const existingQuestion = await this.questionModel.findOne(questioncheckobject);
 
         if (existingQuestion) {
           console.log('===error=======', existingQuestion);
