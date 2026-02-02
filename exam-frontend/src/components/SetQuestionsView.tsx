@@ -79,6 +79,9 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
     const [timer, setTimer] = useState(0);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+    const [feedbackText, setFeedbackText] = useState('');
+    const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const [user, setUser] = useState<{ id: string; name: string } | null>(null);
     const isExiting = useRef(false);
 
@@ -258,6 +261,33 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
             [questionId]: optionKey
         }));
         saveProgress(questionId, optionKey);
+    };
+
+    const submitFeedback = async () => {
+        if (!feedbackText.trim() || !currentQuestion || !user) {
+            toast("Please enter feedback text.", "error");
+            return;
+        }
+
+        setIsSubmittingFeedback(true);
+        try {
+            await axios.post('/api/feedback', {
+                userId: user.id,
+                questionId: currentQuestion._id,
+                feedback: feedbackText
+            }, {
+                headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+            });
+            
+            toast("Feedback submitted successfully!", "success");
+            setFeedbackText('');
+            setShowFeedbackModal(false);
+        } catch (e) {
+            console.error("Error submitting feedback:", e);
+            toast("Failed to submit feedback. Please try again.", "error");
+        } finally {
+            setIsSubmittingFeedback(false);
+        }
     };
 
     const getCorrectKey = (q: Question) => q.correctOptionKey || q.correctOption || q.correctAnswer;
@@ -515,6 +545,20 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                         >
                             Previous
                         </button>
+
+                        <button 
+                            className="btn-full" 
+                            style={{ 
+                                width: 'auto', 
+                                background: '#607d8b', 
+                                margin: '0 10px',
+                                display: isAnswered ? 'block' : 'none'
+                            }} 
+                            onClick={() => setShowFeedbackModal(true)}
+                        >
+                            Feedback
+                        </button>
+
                         <button 
                             className="btn-full" 
                             style={{ width: 'auto' }} 
@@ -640,6 +684,52 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                         >
                             Exit Quiz
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {showFeedbackModal && (
+                <div className="modal-overlay">
+                    <div className="modal-box" style={{ maxWidth: '500px' }}>
+                        <h2 style={{ margin: 0, color: '#008ecc', marginBottom: '15px' }}>Question Feedback</h2>
+                        <p style={{ textAlign: 'left', fontSize: '0.9rem', color: '#666', marginBottom: '10px' }}>
+                            Report an error or provide feedback for this question.
+                        </p>
+                        <textarea
+                            style={{
+                                width: '100%',
+                                height: '120px',
+                                padding: '10px',
+                                borderRadius: '8px',
+                                border: '1px solid #ddd',
+                                marginBottom: '15px',
+                                resize: 'none',
+                                fontFamily: 'inherit'
+                            }}
+                            placeholder="Write your feedback here..."
+                            value={feedbackText}
+                            onChange={(e) => setFeedbackText(e.target.value)}
+                        />
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                                className="btn-full"
+                                style={{ background: '#ccc', marginTop: 0 }}
+                                onClick={() => {
+                                    setShowFeedbackModal(false);
+                                    setFeedbackText('');
+                                }}
+                            >
+                                Close
+                            </button>
+                            <button
+                                className="btn-full"
+                                style={{ marginTop: 0 }}
+                                onClick={submitFeedback}
+                                disabled={isSubmittingFeedback || !feedbackText.trim()}
+                            >
+                                {isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

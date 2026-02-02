@@ -14,6 +14,7 @@ import { GlobalDatabaseModule } from './database/global.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth/jwt-auth.guard';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { MonitorModule } from './monitor/monitor.module';
+import { FeedbackModule } from './feedback/feedback.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
@@ -70,6 +71,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     AuthModule,
     AttemptsModule,
     MonitorModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [

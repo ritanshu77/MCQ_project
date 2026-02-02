@@ -19,6 +19,11 @@ import {
   QuestionSetSchema,
 } from 'src/schemas/exam-bank/question-set.schema';
 
+import {
+  QuestionFeedback,
+  QuestionFeedbackSchema,
+} from 'src/schemas/core/question-feedback.schema';
+
 @Global() // 🔥 GLOBAL - Everywhere access!
 @Module({
   imports: [
@@ -26,6 +31,7 @@ import {
       // core schemas
       { name: User.name, schema: UserSchema },
       { name: TestResult.name, schema: TestResultSchema },
+      { name: QuestionFeedback.name, schema: QuestionFeedbackSchema },
       // exam bank schemas
       { name: Title.name, schema: TitleSchema },
       { name: Exam.name, schema: ExamSchema },
