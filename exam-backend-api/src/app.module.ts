@@ -16,6 +16,8 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { MonitorModule } from './monitor/monitor.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -29,6 +31,11 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
       isGlobal: true,
       load: [config, databaseConfig], // Custom config files
       envFilePath: '.env',
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'exam-admin-panel', 'dist'),
+      renderPath: '/admin',
+      serveRoot: '/admin',
     }),
 
     //  Use config from custom file
