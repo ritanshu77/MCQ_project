@@ -26,12 +26,15 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://mcq-project-admin.onrender.com',
+      'https://mcq-project-admin.onrender.com/',
+      'https://mcq-project-fz38.onrender.com',
       'http://localhost:3000',
       'http://localhost:3003',
       'http://127.0.0.1:3000'
     ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
   app.useGlobalPipes(
