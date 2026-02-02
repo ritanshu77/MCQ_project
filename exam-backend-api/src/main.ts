@@ -56,20 +56,6 @@ async function bootstrap() {
   //  CRITICAL: Use Express adapter for direct routes
   const httpAdapter = app.getHttpAdapter();
 
-  // Health check endpoint for Render (no authentication needed)
-  httpAdapter.get('/health', (req:Request, res:Response) => {
-    console.log(
-      `[Health Check] Ping received from ${req.headers.origin || 'unknown origin'} at ${new Date().toISOString()}`,
-    );
-    res.json({
-      status: 'OK',
-      service: 'Exam Bank API',
-      timestamp: new Date().toString(),
-      timezone: process.env.TZ,
-      environment: process.env.NODE_ENV || 'development',
-    });
-  });
-
   // Root endpoint
   httpAdapter.get('/', (req: Request, res: Response) => {
     res.json({
