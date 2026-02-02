@@ -24,13 +24,7 @@ async function bootstrap() {
 
   // FIXED CORS - COMPLETE CONFIG
   app.enableCors({
-    origin: [
-      'https://exam-bank-web-frontend.onrender.com',
-      'http://localhost:3000',
-      'http://localhost:3003',
-      'http://127.0.0.1:3000',
-      'http://172.19.160.1:3000',
-    ],
+    origin: process.env.origin_url,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
