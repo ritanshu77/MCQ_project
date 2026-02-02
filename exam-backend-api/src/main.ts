@@ -24,14 +24,9 @@ async function bootstrap() {
 
   // FIXED CORS - COMPLETE CONFIG
   app.enableCors({
-    origin: [
-      'https://mcq-project-admin.onrender.com',
-      'https://mcq-project-admin.onrender.com/',
-      'https://mcq-project-fz38.onrender.com',
-      'http://localhost:3000',
-      'http://localhost:3003',
-      'http://127.0.0.1:3000'
-    ],
+    // Setting origin: true allows ANY domain to access the API while still allowing credentials (cookies).
+    // This effectively bypasses strict CORS checks for all origins.
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',
