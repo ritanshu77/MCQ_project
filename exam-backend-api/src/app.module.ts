@@ -15,6 +15,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth/jwt-auth.guard';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { MonitorModule } from './monitor/monitor.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { AdminModule } from './admin/admin.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -79,6 +80,7 @@ import { join } from 'path';
     AttemptsModule,
     MonitorModule,
     FeedbackModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, Param } from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
 
 @Controller('feedback')
@@ -21,5 +21,13 @@ export class FeedbackController {
   @Get()
   async getAllFeedbacks() {
     return await this.feedbackService.getFeedbacks();
+  }
+
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() body: { status: string },
+  ) {
+    return await this.feedbackService.updateFeedbackStatus(id, body.status);
   }
 }

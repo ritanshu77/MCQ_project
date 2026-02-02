@@ -7,6 +7,8 @@ import {
   Param,
   ParseIntPipe,
   Req,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { AttemptsService } from '../attempts/attempts.service';
@@ -402,5 +404,23 @@ export class QuestionsController {
   @Get(':id')
   async getQuestion(@Param('id') id: string) {
     return await this.questionsService.findOne(id);
+  }
+
+  @Public()
+  @Post('/')
+  async createQuestion(@Body() body: any) {
+    return await this.questionsService.create(body);
+  }
+
+  @Public()
+  @Patch(':id')
+  async updateQuestion(@Param('id') id: string, @Body() body: any) {
+    return await this.questionsService.update(id, body);
+  }
+
+  @Public()
+  @Delete(':id')
+  async deleteQuestion(@Param('id') id: string) {
+    return await this.questionsService.delete(id);
   }
 }

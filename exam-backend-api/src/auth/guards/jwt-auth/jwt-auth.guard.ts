@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from '../../decorators/public.decorator';
@@ -19,15 +19,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getClass(),
     ]);
 
-    // If public, we don't throw error if no user found
     if (isPublic) {
       return user || null;
     }
 
-    // Default behavior
     if (err || !user) {
-      throw err || new Error('Unauthorized'); // Or let the default super handle it?
-      // Actually super.handleRequest throws UnauthorizedException by default
+      throw err || new UnauthorizedException();
     }
     return user;
   }

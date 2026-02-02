@@ -1092,6 +1092,11 @@ export class QuestionsService {
           correctAnswer: 1,
           difficulty: 1,
           questionNumber: 1,
+          explanation: 1,
+          status: 1,
+          subjectId: 1,
+          unitId: 1,
+          chapterId: 1,
 
           // ⭐ Complete Hierarchy
           unitName: '$unitDetails.name',
@@ -1635,5 +1640,73 @@ export class QuestionsService {
         totalQuestions: 0,
       },
     };
+  }
+
+  async create(data: any) {
+    // 1. Basic Validation
+    if (!data.questionText || (!data.questionText.en && !data.questionText.hi)) {
+      throw new BadRequestException('Question text is required (en or hi)');
+    }
+
+    // 2. Validate ObjectIds and Existence
+    const checks: Promise<any>[] = [];
+    if (data.subjectId) {
+      if (!Types.ObjectId.isValid(data.subjectId)) throw new BadRequestException('Invalid subjectId');
+      checks.push(this.subjectModel.exists({ _id: data.subjectId }).then(exists => {
+        if (!exists) throw new NotFoundException(`Subject not found: ${data.subjectId}`);
+      }));
+    }
+    if (data.unitId) {
+      if (!Types.ObjectId.isValid(data.unitId)) throw new BadRequestException('Invalid unitId');
+      checks.push(this.unitModel.exists({ _id: data.unitId }).then(exists => {
+        if (!exists) throw new NotFoundException(`Unit not found: ${data.unitId}`);
+      }));
+    }
+    if (data.chapterId) {
+      if (!Types.ObjectId.isValid(data.chapterId)) throw new BadRequestException('Invalid chapterId');
+      checks.push(this.chapterModel.exists({ _id: data.chapterId }).then(exists => {
+        if (!exists) throw new NotFoundException(`Chapter not found: ${data.chapterId}`);
+      }));
+    }
+
+    await Promise.all(checks);
+
+    // 3. Validate Options
+    if (data.options && Array.isArray(data.options)) {
+      const validKeys = data.options.map((o: any) => o.key);
+      if (data.correctOptionKey && !validKeys.includes(data.correctOptionKey)) {
+        throw new BadRequestException(`Invalid correctOptionKey. Must be one of: ${validKeys.join(', ')}`);
+      }
+    }
+
+    const newQuestion = new this.questionModel(data);
+    return await newQuestion.save();
+  }
+
+  async update(id: string, data: any) {
+    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid Question ID');
+
+    // Validate related entities if they are being updated
+    const checks: Promise<any>[] = [];
+    if (data.subjectId) {
+      if (!Types.ObjectId.isValid(data.subjectId)) throw new BadRequestException('Invalid subjectId');
+      checks.push(this.subjectModel.exists({ _id: data.subjectId }).then(exists => {
+        if (!exists) throw new NotFoundException(`Subject not found: ${data.subjectId}`);
+      }));
+    }
+    // Add other checks if needed, similar to create
+
+    await Promise.all(checks);
+
+    const updated = await this.questionModel.findByIdAndUpdate(id, data, { new: true });
+    if (!updated) throw new NotFoundException('Question not found');
+    return updated;
+  }
+
+  async delete(id: string) {
+    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid Question ID');
+    const deleted = await this.questionModel.findByIdAndDelete(id);
+    if (!deleted) throw new NotFoundException('Question not found');
+    return deleted;
   }
 }

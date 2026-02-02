@@ -28,4 +28,12 @@ export class FeedbackService {
       .sort({ createdAt: -1 })
       .exec();
   }
+
+  async updateFeedbackStatus(id: string, status: string) {
+    return await this.feedbackModel.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true },
+    );
+  }
 }
