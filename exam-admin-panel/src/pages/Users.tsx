@@ -40,7 +40,6 @@ const Users = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    email: '',
     mobile: '',
     password: '',
     type: 'registered'
@@ -125,8 +124,8 @@ const Users = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = { ...formData };
-      if (!payload.password) delete payload.password; // Don't send empty password on edit
+      const { password, ...payload } = formData;
+      const finalPayload = password ? { ...payload, password } : payload;
       
       if (isEditing && currentUser) {
         await axios.put(`${API_BASE_URL}/admin/users/${currentUser._id}`, payload);
