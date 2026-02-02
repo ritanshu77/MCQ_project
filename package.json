@@ -9,9 +9,10 @@
     "dev:backend": "cd exam-backend-api && npm run start:dev",
     "dev:admin": "cd exam-admin-panel && npm run dev",
     "build": "cd exam-admin-panel && npm run build && cd ../exam-frontend && npm run build && cd ../exam-backend-api && npm run build",
-    "start": "npx concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start": "npx concurrently \"npm run start:frontend\" \"npm run start:backend\" \"npm run start:admin\"",
     "start:frontend": "cd exam-frontend && npm start",
-    "start:backend": "cd exam-backend-api && npm run start:prod"
+    "start:backend": "cd exam-backend-api && npm run start:prod",
+    "start:admin": "cd exam-admin-panel && npm run preview"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
