@@ -489,9 +489,28 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                                 {currentQuestion.chapterDetails?.name?.en && <span> &gt; {currentQuestion.chapterDetails.name.en}</span>}
                             </div>
                         )}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: 10 }}>
                             <strong id="q-number">Question-{currentIdx + 1}</strong>
-                            <span id="q-status" style={{ color: '#2e7d32', fontWeight: 'bold' }}>Time: {formatTime(currentQTime)}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                {isAnswered && (
+                                    <button 
+                                        onClick={() => setShowFeedbackModal(true)}
+                                        style={{ 
+                                            background: '#c3cacfff', 
+                                            border: 'none', 
+                                            color: '#67818fff', 
+                                            fontSize: '0.75rem', 
+                                            cursor: 'pointer',
+                                            padding: '4px 10px',
+                                            borderRadius: '4px',
+                                            fontWeight: '600'
+                                        }}
+                                    >
+                                        Report Issue?
+                                    </button>
+                                )}
+                                <span id="q-status" style={{ color: '#2e7d32', fontWeight: 'bold' }}>Time: {formatTime(currentQTime)}</span>
+                            </div>
                         </div>
                         <div style={{ margin: '20px 0' }}>
                             <p style={{ fontSize: '1.2rem', marginBottom: '12px', color: '#111', fontWeight: '600' }}>{currentQuestion.questionText.en}</p>
@@ -544,19 +563,6 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                             disabled={currentIdx === 0}
                         >
                             Previous
-                        </button>
-
-                        <button 
-                            className="btn-full" 
-                            style={{ 
-                                width: 'auto', 
-                                background: '#607d8b', 
-                                margin: '0 10px',
-                                display: isAnswered ? 'block' : 'none'
-                            }} 
-                            onClick={() => setShowFeedbackModal(true)}
-                        >
-                            Feedback
                         </button>
 
                         <button 
@@ -706,14 +712,15 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                                 resize: 'none',
                                 fontFamily: 'inherit'
                             }}
-                            placeholder="Write your feedback here..."
+                            placeholder="Write your feedback here...in 200 words max"
                             value={feedbackText}
+                            maxLength={200}
                             onChange={(e) => setFeedbackText(e.target.value)}
                         />
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <button
                                 className="btn-full"
-                                style={{ background: '#ccc', marginTop: 0 }}
+                                style={{ background: '#91c75fff', marginTop: 0 }}
                                 onClick={() => {
                                     setShowFeedbackModal(false);
                                     setFeedbackText('');
@@ -723,7 +730,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                             </button>
                             <button
                                 className="btn-full"
-                                style={{ marginTop: 0 }}
+                                style={{ background: '#5b80c5ff', marginTop: 0 }}
                                 onClick={submitFeedback}
                                 disabled={isSubmittingFeedback || !feedbackText.trim()}
                             >
