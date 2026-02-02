@@ -10,6 +10,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext) {
+    // Allow all OPTIONS requests (preflight checks) to pass
+    if (context.switchToHttp().getRequest().method === 'OPTIONS') {
+      return true;
+    }
     return super.canActivate(context);
   }
 
