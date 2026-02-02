@@ -24,7 +24,12 @@ async function bootstrap() {
 
   // FIXED CORS - COMPLETE CONFIG
   app.enableCors({
-    origin: process.env.origin_url,
+    origin: [
+      'https://mcq-project-admin.onrender.com',
+      'http://localhost:3000',
+      'http://localhost:3003',
+      'http://127.0.0.1:3000'
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
