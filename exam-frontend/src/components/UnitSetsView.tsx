@@ -187,6 +187,43 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
         }
         .reset-btn:hover { background: #d32f2f; }
         
+        /* Coming Soon Styles */
+        .coming-soon {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            color: #888;
+            font-size: 14px;
+            font-style: italic;
+            border: 1px dashed #ddd;
+        }
+
+        /* Horizontal Scroll Styles */
+        .horizontal-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding-bottom: 15px; /* Space for scrollbar */
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+        }
+        .horizontal-scroll-container::-webkit-scrollbar {
+            height: 6px;
+        }
+        .horizontal-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .horizontal-scroll-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        .horizontal-scroll-container .set-card {
+            min-width: 250px; /* Fixed width for horizontal items */
+            flex-shrink: 0;
+        }
+
         /* Loader Styles */
         .loader-container {
             display: flex;
@@ -243,90 +280,183 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
                 {chapter.name.en} <span style={{ fontSize: 14, color: '#666', fontWeight: 'normal' }}>({chapter.name.hi})</span>
               </h2>
               
-              <div className="sets-grid">
-                {chapter.sets.map((set) => (
-                  <div 
-                    key={set._id} 
-                    className="set-card"
-                    onClick={() => {
-                      try { localStorage.removeItem(`quiz_exited_${set._id}`); } catch {}
-                      
-                      // Check for titleId in current URL or search params
-                      const currentUrl = new URL(window.location.href);
-                      let currentTitleId: string | undefined = currentUrl.pathname.split('/titles/')[1]?.split('/')[0];
-                      if (!currentTitleId && searchParams) {
-                         currentTitleId = searchParams.get('titleId') || undefined;
-                      }
-
-                      const targetUrl = currentTitleId 
-                        ? `/dashboard/units/${unitId}/sets/${set._id}?titleId=${currentTitleId}`
-                        : `/dashboard/units/${unitId}/sets/${set._id}`;
-
-                      router.push(targetUrl);
-                    }}
-                  >
-                    {!set.isActive && (
-                      <span className="progress-badge" style={{ background: '#ffebee', color: '#c62828' }}>
-                         Inactive
-                      </span>
-                    )}
-                    
-                    <h3 style={{ 
-                      fontSize: 16, 
-                      fontWeight: "bold", 
-                      marginBottom: 4,
-                      color: "#1f2937",
-                      paddingRight: '50px'
-                    }}>
-                      {set.name?.en || set.name?.hi || `Set ${set.setNumber}`}
-                    </h3>
-                    
-                    <p style={{ 
-                      fontSize: 20, 
-                      color: "var(--primary-blue)", 
-                      fontWeight: "bold", 
-                      margin: "0 0 4px 0" 
-                    }}>
-                      {set.totalQuestions} Questions
-                    </p>
-                    
-                    {/* Progress & Score */}
-                    <div style={{ marginTop: '4px' }}>
-                        {(set.progress !== undefined && set.progress > 0) && (
-                           <div style={{ 
-                               display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' 
-                           }}>
-                               <span>Score: </span>
-                               <span style={{ color: (set.score || 0) >= 0 ? 'var(--primary-blue)' : 'red' }}>
-                                   {(set.score || 0).toFixed(2)}
-                               </span>
-                           </div>
-                        )}
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                           <div style={{ flex: 1, height: '4px', background: '#eee', borderRadius: '2px', overflow: 'hidden' }}>
-                              {(set.score || 0) !== 0 && (
+              {chapter.sets.length === 0 ? (
+                <div className="coming-soon">
+                   Coming Soon...
+                </div>
+              ) : chapter.sets.length > 4 ? (
+                /* Horizontal Scroll for > 4 sets */
+                <div className="horizontal-scroll-container">
+                    {[...chapter.sets].reverse().map((set) => (
+                         <div 
+                         key={set._id} 
+                         className="set-card"
+                         onClick={() => {
+                           try { localStorage.removeItem(`quiz_exited_${set._id}`); } catch {}
+                           
+                           // Check for titleId in current URL or search params
+                           const currentUrl = new URL(window.location.href);
+                           let currentTitleId: string | undefined = currentUrl.pathname.split('/titles/')[1]?.split('/')[0];
+                           if (!currentTitleId && searchParams) {
+                              currentTitleId = searchParams.get('titleId') || undefined;
+                           }
+     
+                           const targetUrl = currentTitleId 
+                             ? `/dashboard/units/${unitId}/sets/${set._id}?titleId=${currentTitleId}`
+                             : `/dashboard/units/${unitId}/sets/${set._id}`;
+     
+                           router.push(targetUrl);
+                         }}
+                       >
+                         {!set.isActive && (
+                           <span className="progress-badge" style={{ background: '#ffebee', color: '#c62828' }}>
+                              Inactive
+                           </span>
+                         )}
+                         
+                         <h3 style={{ 
+                           fontSize: 16, 
+                           fontWeight: "bold", 
+                           marginBottom: 4,
+                           color: "#1f2937",
+                           paddingRight: '50px'
+                         }}>
+                           {set.name?.en || set.name?.hi || `Set ${set.setNumber}`}
+                         </h3>
+                         
+                         <p style={{ 
+                           fontSize: 20, 
+                           color: "var(--primary-blue)", 
+                           fontWeight: "bold", 
+                           margin: "0 0 4px 0" 
+                         }}>
+                           {set.totalQuestions} Questions
+                         </p>
+                         
+                         {/* Progress & Score */}
+                         <div style={{ marginTop: '4px' }}>
+                             {(set.progress !== undefined && set.progress > 0) && (
                                 <div style={{ 
-                                    width: `${Math.min((Math.abs(set.score || 0) / (set.totalQuestions || 1)) * 100, 100)}%`, 
-                                    height: '100%', 
-                                    background: (set.score || 0) >= 0 ? 'var(--primary-blue)' : 'red' 
-                                }}></div>
-                              )}
-                           </div>
-                           {/* Reset Button - Show if testResult exists and status is NOT 'not_started' */}
-                           {set.testResult && set.testResult.status !== 'not_started' && (
-                               <button 
-                                  className="reset-btn"
-                                  onClick={(e) => handleReset(e, set._id)}
-                                  title="Reset Quiz"
-                               >
-                                  Reset
-                               </button>
-                           )}
+                                    display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' 
+                                }}>
+                                    <span>Score: </span>
+                                    <span style={{ color: (set.score || 0) >= 0 ? 'var(--primary-blue)' : 'red' }}>
+                                        {(set.score || 0).toFixed(2)}
+                                    </span>
+                                </div>
+                             )}
+                             <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <div style={{ flex: 1, height: '4px', background: '#eee', borderRadius: '2px', overflow: 'hidden' }}>
+                                   {(set.score || 0) !== 0 && (
+                                     <div style={{ 
+                                         width: `${Math.min((Math.abs(set.score || 0) / (set.totalQuestions || 1)) * 100, 100)}%`, 
+                                         height: '100%', 
+                                         background: (set.score || 0) >= 0 ? 'var(--primary-blue)' : 'red' 
+                                     }}></div>
+                                   )}
+                                </div>
+                                {/* Reset Button - Show if testResult exists and status is NOT 'not_started' */}
+                                {set.testResult && set.testResult.status !== 'not_started' && (
+                                    <button 
+                                       className="reset-btn"
+                                       onClick={(e) => handleReset(e, set._id)}
+                                       title="Reset Quiz"
+                                    >
+                                       Reset
+                                    </button>
+                                )}
+                             </div>
+                         </div>
+                       </div>
+                    ))}
+                </div>
+              ) : (
+                /* Grid for <= 4 sets */
+                <div className="sets-grid">
+                    {chapter.sets.map((set) => (
+                    <div 
+                        key={set._id} 
+                        className="set-card"
+                        onClick={() => {
+                        try { localStorage.removeItem(`quiz_exited_${set._id}`); } catch {}
+                        
+                        // Check for titleId in current URL or search params
+                        const currentUrl = new URL(window.location.href);
+                        let currentTitleId: string | undefined = currentUrl.pathname.split('/titles/')[1]?.split('/')[0];
+                        if (!currentTitleId && searchParams) {
+                            currentTitleId = searchParams.get('titleId') || undefined;
+                        }
+
+                        const targetUrl = currentTitleId 
+                            ? `/dashboard/units/${unitId}/sets/${set._id}?titleId=${currentTitleId}`
+                            : `/dashboard/units/${unitId}/sets/${set._id}`;
+
+                        router.push(targetUrl);
+                        }}
+                    >
+                        {!set.isActive && (
+                        <span className="progress-badge" style={{ background: '#ffebee', color: '#c62828' }}>
+                            Inactive
+                        </span>
+                        )}
+                        
+                        <h3 style={{ 
+                        fontSize: 16, 
+                        fontWeight: "bold", 
+                        marginBottom: 4,
+                        color: "#1f2937",
+                        paddingRight: '50px'
+                        }}>
+                        {set.name?.en || set.name?.hi || `Set ${set.setNumber}`}
+                        </h3>
+                        
+                        <p style={{ 
+                        fontSize: 20, 
+                        color: "var(--primary-blue)", 
+                        fontWeight: "bold", 
+                        margin: "0 0 4px 0" 
+                        }}>
+                        {set.totalQuestions} Questions
+                        </p>
+                        
+                        {/* Progress & Score */}
+                        <div style={{ marginTop: '4px' }}>
+                            {(set.progress !== undefined && set.progress > 0) && (
+                            <div style={{ 
+                                display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '12px', fontWeight: 'bold' 
+                            }}>
+                                <span>Score: </span>
+                                <span style={{ color: (set.score || 0) >= 0 ? 'var(--primary-blue)' : 'red' }}>
+                                    {(set.score || 0).toFixed(2)}
+                                </span>
+                            </div>
+                            )}
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div style={{ flex: 1, height: '4px', background: '#eee', borderRadius: '2px', overflow: 'hidden' }}>
+                                {(set.score || 0) !== 0 && (
+                                    <div style={{ 
+                                        width: `${Math.min((Math.abs(set.score || 0) / (set.totalQuestions || 1)) * 100, 100)}%`, 
+                                        height: '100%', 
+                                        background: (set.score || 0) >= 0 ? 'var(--primary-blue)' : 'red' 
+                                    }}></div>
+                                )}
+                            </div>
+                            {/* Reset Button - Show if testResult exists and status is NOT 'not_started' */}
+                            {set.testResult && set.testResult.status !== 'not_started' && (
+                                <button 
+                                    className="reset-btn"
+                                    onClick={(e) => handleReset(e, set._id)}
+                                    title="Reset Quiz"
+                                >
+                                    Reset
+                                </button>
+                            )}
+                            </div>
                         </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                    ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
