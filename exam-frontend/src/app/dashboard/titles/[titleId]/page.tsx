@@ -58,23 +58,6 @@ export default function TitleSubjectsPage() {
         .value { font-size: 20px; font-weight: bold; color: var(--primary-blue); margin: 4px 0; }
         .desc { font-size: 11px; color: #888; }
         
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            color: #666;
-            text-decoration: none;
-            font-size: 14px;
-            padding: 4px 10px;
-            border-radius: 4px;
-            background: #f5f5f5;
-            transition: all 0.2s;
-            margin-bottom: 10px;
-        }
-        .back-btn:hover {
-            background: #e0e0e0;
-            color: #333;
-        }
-
         /* Loader Styles */
         .loader-container {
             display: flex;

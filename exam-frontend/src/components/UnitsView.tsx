@@ -69,13 +69,6 @@ export default function UnitsView({
   return (
     <div>
       <style jsx>{`
-        .back-btn { 
-          display: inline-flex; align-items: center; gap: 4px; 
-          padding: 6px 12px; background: white; border: 2px solid var(--primary-blue); 
-          border-radius: 8px; color: var(--primary-blue); font-weight: 600; cursor: pointer;
-          transition: all 0.3s; margin-bottom: 12px; font-size: 12px;
-        }
-        .back-btn:hover { background: var(--primary-blue); color: white; transform: translateY(-1px); }
         .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
         .units-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
         .unit-card { 

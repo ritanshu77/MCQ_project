@@ -74,6 +74,27 @@ body {
 .progress-fill { height: 100%; border-radius: 10px; }
 .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; display: block; }
 
+.back-btn { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 4px; 
+  padding: 6px 12px; 
+  background: white; 
+  border: 2px solid var(--primary-blue); 
+  border-radius: 8px; 
+  color: var(--primary-blue); 
+  font-weight: 600; 
+  cursor: pointer;
+  transition: all 0.3s; 
+  margin-bottom: 10px; 
+  font-size: 12px;
+}
+.back-btn:hover { 
+  background: var(--primary-blue); 
+  color: white; 
+  transform: translateY(-1px); 
+}
+
 .sidebar-overlay {
     display: none;
     position: fixed;
