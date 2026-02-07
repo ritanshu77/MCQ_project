@@ -80,15 +80,16 @@ export default function UnitsView({
         .loading { text-align: center; padding: 40px 20px; color: #666; }
       `}</style>
 
-      <button onClick={onBack} className="back-btn">
-        ← Back to Dashboard
-      </button>
-
-      <div className="header">
-        <h1>Units - {subjectName}</h1>
-        <p style={{ color: "#666", fontSize: 13, margin: "0 0 10px 0" }}>
-          {loading ? "Loading..." : `${units.length} units available`}
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+        <div className="header">
+            <h1>Units - {subjectName}</h1>
+            <p style={{ color: "#666", fontSize: 13, margin: "0" }}>
+            {loading ? "Loading..." : `${units.length} units available`}
+            </p>
+        </div>
+        <button onClick={onBack} className="back-btn">
+            ← Back to Dashboard
+        </button>
       </div>
 
       {loading ? (

@@ -209,15 +209,16 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
         }
       `}</style>
 
-      <button onClick={() => router.back()} className="back-btn">
-         Back
-      </button>
-
-      <div className="header">
-        <h1>{chapters.length > 0 ? 'Chapters & Sets' : 'Unit Sets'}</h1>
-        <p style={{ color: "#666", fontSize: 13, margin: "0 0 10px 0" }}>
-          {loading ? "Loading..." : `${chapters.length} chapters available`}
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+        <div className="header">
+            <h1>{chapters.length > 0 ? 'Chapters & Sets' : 'Unit Sets'}</h1>
+            <p style={{ color: "#666", fontSize: 13, margin: "0" }}>
+            {loading ? "Loading..." : `${chapters.length} chapters available`}
+            </p>
+        </div>
+        <button onClick={() => router.back()} className="back-btn">
+            Back
+        </button>
       </div>
 
       {loading ? (

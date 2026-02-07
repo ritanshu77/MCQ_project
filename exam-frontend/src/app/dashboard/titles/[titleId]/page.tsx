@@ -80,14 +80,16 @@ export default function TitleSubjectsPage() {
         }
       `}</style>
 
-      <div className="header">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+        <div className="header">
+            <h1>Subjects by Source</h1>
+            <p style={{ color: "#666", fontSize: 13, margin: "4px 0 0 0" }}>
+            {loading ? "Loading..." : `${subjects.length} subjects available`}
+            </p>
+        </div>
         <Link href="/dashboard" className="back-btn">
              ← Back to Dashboard
         </Link>
-        <h1>Subjects by Source</h1>
-        <p style={{ color: "#666", fontSize: 13, margin: "4px 0 10px 0" }}>
-          {loading ? "Loading..." : `${subjects.length} subjects available`}
-        </p>
       </div>
 
       {loading ? (
