@@ -21,7 +21,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
         <Link href="/dashboard" className="nav-link active" onClick={closeSidebar}>
           🏠 Dashboard
         </Link>
-        <a
+        {/* <a
           href="#"
           className="nav-link"
           onClick={(e) => {
@@ -53,11 +53,11 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           }}
         >
           🏆 Leaderboard
-        </a>
+        </a> */}
         <Link href="/dashboard/profile" className="nav-link" onClick={closeSidebar}>
           👤 Profile
         </Link>
-        <a
+        {/* <a
           href="#"
           className="nav-link"
           onClick={(e) => {
@@ -67,7 +67,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           }}
         >
           ⚙️ Settings
-        </a>
+        </a> */}
         
         <div style={{ flex: 1 }}></div>
 
