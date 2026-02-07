@@ -720,6 +720,14 @@ export class QuestionsService {
     const match: any = { status: 'active' };
     if (titleId) {
       match.titleId = new Types.ObjectId(titleId);
+    } else {
+      // ✅ Exclude AI Generated titles from global subject stats
+      const aiTitles = await this.titleModel
+        .find({ aiGenerated: true })
+        .select('_id');
+      if (aiTitles.length > 0) {
+        match.titleId = { $nin: aiTitles.map((t) => t._id) };
+      }
     }
 
     const pipeline: any[] = [
