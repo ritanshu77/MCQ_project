@@ -4,7 +4,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { unitId } = await params;
   const body = await request.json();
   
-  const backend = process.env.BACKEND_URL;
+  const backend = process.env.BACKEND_URL || "http://localhost:3001";
   const url = `${backend}/questions/unit/allsets/${unitId}`;
 
   try {
