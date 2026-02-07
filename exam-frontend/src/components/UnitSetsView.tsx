@@ -161,31 +161,11 @@ export default function UnitSetsView({ unitId }: UnitSetsViewProps) {
       }
         .header h1 { font-size: 24px; font-weight: bold; color: var(--primary-blue); margin: 0 0 4px 0; }
         .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-        .set-card { 
-          background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
-          border-left: 4px solid #ff9800; cursor: pointer; transition: all 0.3s;
-          position: relative; overflow: hidden;
-        }
-        .set-card:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.12); }
+        
+        /* Removed local .set-card, .progress-badge, .reset-btn styles to use global styles */
+        
         .empty-state { text-align: center; padding: 40px 20px; color: #666; }
         .loading { text-align: center; padding: 40px 20px; color: #666; }
-        .progress-badge {
-            position: absolute; top: 10px; right: 10px; 
-            background: #e0f2f1; color: #00695c; padding: 2px 6px; 
-            border-radius: 20px; font-size: 10px; font-weight: bold;
-        }
-        .reset-btn {
-            padding: 2px 6px;
-            font-size: 10px;
-            background: #ef5350;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-left: 8px;
-        }
-        .reset-btn:hover { background: #d32f2f; }
         
         /* Coming Soon Styles */
         .coming-soon {
