@@ -761,6 +761,13 @@ export class QuestionsService {
         },
       },
 
+      // 3.5. Filter out subjects without details
+      {
+        $match: {
+          subjectDetails: { $ne: [] },
+        },
+      },
+
       // 4. Project clean data
       {
         $project: {
