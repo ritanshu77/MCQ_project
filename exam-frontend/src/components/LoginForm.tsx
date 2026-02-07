@@ -23,6 +23,7 @@ export default function LoginForm() {
   const [registerMobile, setRegisterMobile] = useState("");
 
   const [userPassword, setUserPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -402,14 +403,47 @@ export default function LoginForm() {
 
                 <div className="form-group">
                     <label className="label">Password</label>
-                    <input 
-                        className="input"
-                        type="password"
-                        placeholder="******"
-                        value={userPassword}
-                        onChange={(e) => setUserPassword(e.target.value)}
-                        required
-                    />
+                    <div style={{ position: 'relative' }}>
+                        <input 
+                            className="input"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="******"
+                            value={userPassword}
+                            onChange={(e) => setUserPassword(e.target.value)}
+                            required
+                            style={{ paddingRight: '40px' }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{
+                                position: 'absolute',
+                                right: '10px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: '#666',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '4px'
+                            }}
+                            title={showPassword ? "Hide password" : "Show password"}
+                        >
+                            {showPassword ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 {userError && <div className="error-msg" style={{ marginBottom: 10 }}>{userError}</div>}
