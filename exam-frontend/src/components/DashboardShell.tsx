@@ -180,10 +180,24 @@ export default function DashboardShell({ user }: { user: User }) {
         }
 
         /* Tabs */
-        .tabs { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .tabs { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 15px; 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
         .tab-btn {
             background: none; border: none; padding: 6px 12px; font-size: 13px; cursor: pointer;
             border-radius: 6px; color: #666; font-weight: 500;
+            flex-shrink: 0;
         }
         .tab-btn.active { background: var(--primary-blue); color: white; }
         .tab-btn:hover:not(.active) { background: #f5f5f5; }
