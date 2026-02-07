@@ -228,4 +228,41 @@ export class AdminService {
       },
     };
   }
+
+  async checkDataIntegrity() {
+    const questions = await this.questionModel.find({}).lean();
+    const units = await this.unitModel.find({}).lean();
+    
+    // Create a map for faster lookup: UnitID -> SubjectID
+    const unitMap = new Map();
+    units.forEach(u => unitMap.set(u._id.toString(), u.subjectId.toString()));
+
+    const results = {
+      totalQuestions: questions.length,
+      mismatches: [] as any[],
+      orphans: [] as any[],
+    };
+
+    for (const q of questions) {
+      if (q.unitId) {
+        const unitSubjectId = unitMap.get(q.unitId.toString());
+        
+        if (unitSubjectId) {
+          if (!q.subjectId || unitSubjectId !== q.subjectId.toString()) {
+            results.mismatches.push({
+              questionId: q._id,
+              questionSubjectId: q.subjectId,
+              unitSubjectId: unitSubjectId,
+            });
+          }
+        } else {
+          results.orphans.push({
+            questionId: q._id,
+            unitId: q.unitId,
+          });
+        }
+      }
+    }
+    return results;
+  }
 }

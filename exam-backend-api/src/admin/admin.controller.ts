@@ -47,4 +47,9 @@ export class AdminController {
   async login(@Body() body: any) {
     return await this.adminService.login(body);
   }
+
+  @Get('integrity-check')
+  async checkIntegrity() {
+    return await this.adminService.checkDataIntegrity();
+  }
 }
