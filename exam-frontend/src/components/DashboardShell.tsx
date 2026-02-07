@@ -27,6 +27,7 @@ interface Title {
   name: { en: string; hi: string };
   code: string;
   description?: { en: string; hi: string };
+  aiGenerated?: boolean;
 }
 
 interface Exam {
@@ -42,7 +43,7 @@ interface User {
 }
 
 export default function DashboardShell({ user }: { user: User }) {
-  const [activeTab, setActiveTab] = useState<'topics' | 'sources' | 'exams'>('topics');
+  const [activeTab, setActiveTab] = useState<'topics' | 'sources' | 'exams' | 'ai'>('topics');
   
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [titles, setTitles] = useState<Title[]>([]);
@@ -65,7 +66,7 @@ export default function DashboardShell({ user }: { user: User }) {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'sources' && titles.length === 0) fetchTitles();
+    if ((activeTab === 'sources' || activeTab === 'ai') && titles.length === 0) fetchTitles();
     if (activeTab === 'exams' && exams.length === 0) fetchExams();
   }, [activeTab]);
 
@@ -207,6 +208,9 @@ export default function DashboardShell({ user }: { user: User }) {
         <button className={`tab-btn ${activeTab === 'sources' ? 'active' : ''}`} onClick={() => setActiveTab('sources')}>
           🏛️ By Institute/Source
         </button>
+        <button className={`tab-btn ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => setActiveTab('ai')}>
+          🤖 AI Generated
+        </button>
         <button className={`tab-btn ${activeTab === 'exams' ? 'active' : ''}`} onClick={() => setActiveTab('exams')}>
           📝 Previous Exams
         </button>
@@ -244,11 +248,11 @@ export default function DashboardShell({ user }: { user: User }) {
       {activeTab === 'sources' && (
         loadingExtras ? (
             <div className="loader-container"><div className="spinner"></div></div>
-        ) : titles.length === 0 ? (
+        ) : titles.filter(t => !t.aiGenerated).length === 0 ? (
             <div className="loading">No sources available</div>
         ) : (
             <div className="stats-grid">
-            {titles.map((title) => (
+            {titles.filter(t => !t.aiGenerated).map((title) => (
                 <Link 
                 key={title._id} 
                 href={`/dashboard/titles/${title._id}`}
@@ -258,6 +262,30 @@ export default function DashboardShell({ user }: { user: User }) {
                 <div className="stat-title">{title.name.en}</div>
                 <div className="stat-desc">{title.name.hi}</div>
                 <div className="badge">{title.code}</div>
+                </Link>
+            ))}
+            </div>
+        )
+      )}
+
+      {/* AI TAB */}
+      {activeTab === 'ai' && (
+        loadingExtras ? (
+            <div className="loader-container"><div className="spinner"></div></div>
+        ) : titles.filter(t => t.aiGenerated).length === 0 ? (
+            <div className="loading">No AI generated content available</div>
+        ) : (
+            <div className="stats-grid">
+            {titles.filter(t => t.aiGenerated).map((title) => (
+                <Link 
+                key={title._id} 
+                href={`/dashboard/titles/${title._id}`}
+                className="stat-card"
+                style={{ borderLeftColor: '#2ecc71' }}
+                >
+                <div className="stat-title">{title.name.en}</div>
+                <div className="stat-desc">{title.name.hi}</div>
+                <div className="badge">AI Generated</div>
                 </Link>
             ))}
             </div>

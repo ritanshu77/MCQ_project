@@ -23,6 +23,9 @@ export class Title {
 
   @Prop({ default: 0 })
   totalQuestions: number;
+
+  @Prop({ default: false })
+  aiGenerated: boolean;
 }
 
 // ✅ YE 2 LINES ADD KARO

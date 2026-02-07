@@ -70,6 +70,7 @@ export class QuestionsService {
         title = await this.titleModel.create({
           code: this.generateCode(dto.title, 'T_'),
           name: { hi: dto.title, en: dto.title },
+          aiGenerated: !!dto.excludeFromGlobalChapterSets,
         });
         results.titlesCreated++;
       }
@@ -1161,7 +1162,7 @@ export class QuestionsService {
   async getTitlesList() {
     return this.titleModel
       .find()
-      .select('name code description')
+      .select('name code description aiGenerated')
       .sort({ 'name.en': 1 })
       .lean()
       .exec();
