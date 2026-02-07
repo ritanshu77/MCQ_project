@@ -64,10 +64,10 @@ export default function ServerStatus() {
       });
     }, 1000);
 
-    // Silent background polling every 3 seconds
+    // Silent background polling every 10 seconds (instead of 3s)
     pollingRef.current = setInterval(() => {
         checkAgain(false); // Silent check
-    }, 3000);
+    }, 10000);
   };
 
   const checkAgain = async (restartCountdownIfFailed = false) => {
