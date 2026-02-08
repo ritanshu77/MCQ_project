@@ -466,7 +466,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
             `}</style>
             <nav className="top-nav">
                 <div style={{ fontWeight: 'bold', color: 'var(--primary-blue)' }}>QUIZ PORTAL</div>
-                <div>Time Taken: {formatTime(timer)}</div>
+                <div>Time : {formatTime(timer)}</div>
                 <button className="toggle-btn" onClick={() => setMobilePanelOpen(!mobilePanelOpen)}>☰</button>
             </nav>
             {mobilePanelOpen && <div className="mobile-overlay" onClick={() => setMobilePanelOpen(false)} />}

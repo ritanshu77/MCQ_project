@@ -85,7 +85,7 @@
 
 <nav class="top-nav">
     <div style="font-weight: bold; color: var(--primary-blue);">QUIZ PORTAL</div>
-    <div id="timer">Time Taken: 00 : 00 : 00</div>
+    <div id="timer">Time : 00 : 00 : 00</div>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
 </nav>
 
@@ -205,7 +205,7 @@
         const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
         const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
         const secs = String(totalSeconds % 60).padStart(2, '0');
-        document.getElementById('timer').innerText = `Time Taken: ${hrs} : ${mins} : ${secs}`;
+        document.getElementById('timer').innerText = `Time : ${hrs} : ${mins} : ${secs}`;
     }, 1000);
 
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
