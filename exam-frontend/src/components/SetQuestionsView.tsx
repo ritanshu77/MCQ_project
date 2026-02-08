@@ -481,7 +481,24 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                             </div>
                         )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: 10 }}>
-                            <strong id="q-number">Question-{currentIdx + 1}</strong>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <strong id="q-number">Question-{currentIdx + 1}</strong>
+                                {currentQuestion.difficulty && (
+                                    <span style={{
+                                        padding: '2px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 'bold',
+                                        color: 'white',
+                                        backgroundColor: 
+                                             currentQuestion.difficulty.toLowerCase() === 'easy' ? '#4caf50' : 
+                                             ['medium', 'moderate'].includes(currentQuestion.difficulty.toLowerCase()) ? '#ff9800' : 
+                                             '#f44336'
+                                     }}>
+                                        {currentQuestion.difficulty.charAt(0).toUpperCase() + currentQuestion.difficulty.slice(1)}
+                                    </span>
+                                )}
+                            </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 {isAnswered && (
                                     <button 
