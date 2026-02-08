@@ -83,7 +83,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
     const [feedbackText, setFeedbackText] = useState('');
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const [user, setUser] = useState<{ id: string; name: string } | null>(null);
-
+    const [visitedQuestions, setVisitedQuestions] = useState<Set<string>>(new Set());
 
     // Fetch User
     useEffect(() => {
@@ -195,6 +195,17 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
         fetchSetDetails();
     }, [setId, fetchSetDetails]);
     
+    useEffect(() => {
+        if (setDetails && setDetails.questions[currentIdx]) {
+            const currentQId = setDetails.questions[currentIdx]._id;
+            setVisitedQuestions(prev => {
+                const newSet = new Set(prev);
+                newSet.add(currentQId);
+                return newSet;
+            });
+        }
+    }, [currentIdx, setDetails]);
+
     useEffect(() => {
         setCurrentIdx(0);
     }, [setDetails]);
@@ -412,8 +423,10 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                 .palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
                 .palette-scroll { padding-right: 4px; flex: 1; overflow-y: auto; min-height: 0; }
                 .q-box { height: 40px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold; }
-                .q-box.answered { background: var(--success-green); color: white; border: none; }
-                .q-box.current { border: 2px solid var(--primary-blue); color: var(--primary-blue); }
+                .q-box.right { background: var(--success-green); color: white; border: none; }
+                .q-box.wrong { background: var(--error-red); color: white; border: none; }
+                .q-box.seen { border: 2px solid var(--primary-blue); color: var(--primary-blue); }
+                .q-box.current { box-shadow: 0 0 0 2px var(--primary-blue); } 
                 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; align-items: center; justify-content: center; }
                 .modal-box { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
                 @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -598,18 +611,31 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                         <center><strong>Question Palette</strong></center>
                         <div className="palette-scroll">
                             <div className="palette">
-                                {setDetails.questions.map((q, i) => (
-                                    <div 
-                                        key={q._id}
-                                        className={`q-box ${userAnswers[q._id] ? 'answered' : ''} ${currentIdx === i ? 'current' : ''}`}
-                                        onClick={() => {
-                                            setCurrentIdx(i);
-                                            if (window.innerWidth <= 992) setMobilePanelOpen(false);
-                                        }}
-                                    >
-                                        {i + 1}
-                                    </div>
-                                ))}
+                                {setDetails.questions.map((q, i) => {
+                                    const isSelected = !!userAnswers[q._id];
+                                    const correctKey = getCorrectKey(q);
+                                    const isCorrect = isSelected && userAnswers[q._id] === correctKey;
+                                    const isWrong = isSelected && !isCorrect;
+                                    const isSeen = visitedQuestions.has(q._id) && !isSelected;
+                                    
+                                    let statusClass = '';
+                                    if (isCorrect) statusClass = 'right';
+                                    else if (isWrong) statusClass = 'wrong';
+                                    else if (isSeen) statusClass = 'seen';
+
+                                    return (
+                                        <div 
+                                            key={q._id}
+                                            className={`q-box ${statusClass} ${currentIdx === i ? 'current' : ''}`}
+                                            onClick={() => {
+                                                setCurrentIdx(i);
+                                                if (window.innerWidth <= 992) setMobilePanelOpen(false);
+                                            }}
+                                        >
+                                            {i + 1}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                         <button 
