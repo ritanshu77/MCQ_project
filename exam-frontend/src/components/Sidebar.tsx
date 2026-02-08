@@ -1,8 +1,11 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { toast } from "./Toast";
 
 export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
+  const pathname = usePathname();
+
   const closeSidebar = () => {
     if (onClose) onClose();
     if (window.innerWidth <= 768) {
@@ -18,7 +21,11 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
       </div>
       
       <div className="sidebar-content">
-        <Link href="/dashboard" className="nav-link active" onClick={closeSidebar}>
+        <Link 
+          href="/dashboard" 
+          className={`nav-link ${pathname === '/dashboard' || (pathname.startsWith('/dashboard') && !pathname.startsWith('/dashboard/profile')) ? 'active' : ''}`} 
+          onClick={closeSidebar}
+        >
           🏠 Dashboard
         </Link>
         {/* <a
@@ -54,7 +61,11 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
         >
           🏆 Leaderboard
         </a> */}
-        <Link href="/dashboard/profile" className="nav-link" onClick={closeSidebar}>
+        <Link 
+          href="/dashboard/profile" 
+          className={`nav-link ${pathname.startsWith('/dashboard/profile') ? 'active' : ''}`} 
+          onClick={closeSidebar}
+        >
           👤 Profile
         </Link>
         {/* <a
