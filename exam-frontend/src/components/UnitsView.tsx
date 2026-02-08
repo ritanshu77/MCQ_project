@@ -34,6 +34,7 @@ export default function UnitsView({
   const router = useRouter();
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const didFetchUnitsRef = useRef(false);
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function UnitsView({
   const fetchUnits = async () => {
     try {
       setLoading(true);
+      setError(null);
       const { data } = await axios.post(
         `/api/units`,
         {
@@ -58,8 +60,10 @@ export default function UnitsView({
         }
       );
       setUnits(data.units || []);
-    } catch (error) {
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to load units';
       console.error('Units fetch error:', error);
+      setError(errorMsg);
       setUnits([]);
     } finally {
       setLoading(false);
@@ -95,6 +99,30 @@ export default function UnitsView({
       {loading ? (
         <div className="loading">
           <div style={{ fontSize: 16 }}>Loading units...</div>
+        </div>
+      ) : error ? (
+        <div className="empty-state" style={{ color: '#dc2626', borderTop: '2px solid #dc2626', paddingTop: 40 }}>
+          <div style={{ fontSize: 48, marginBottom: 20 }}>⚠️</div>
+          <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 12 }}>
+            Error Loading Units
+          </h2>
+          <p style={{ fontSize: 16, marginBottom: 20 }}>
+            {error}
+          </p>
+          <button 
+            onClick={fetchUnits}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: 14
+            }}
+          >
+            Retry
+          </button>
         </div>
       ) : units.length === 0 ? (
         <div className="empty-state">

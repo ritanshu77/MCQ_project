@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { toast } from './Toast';
@@ -83,7 +83,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
     const [feedbackText, setFeedbackText] = useState('');
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const [user, setUser] = useState<{ id: string; name: string } | null>(null);
-    const isExiting = useRef(false);
+
 
     // Fetch User
     useEffect(() => {
@@ -189,26 +189,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
         return () => clearInterval(interval);
     }, [setDetails, isSubmitted, currentIdx]);
 
-    // Disable browser back button
-    useEffect(() => {
-        const blockBack = () => {
-            // Prevent duplicate history entries (fixes Strict Mode / Re-mount issues)
-            if (window.history.state?.isQuizTrap) {
-                console.log("Already in quiz trap state, skipping pushState");
-                return;
-            }
-            window.history.pushState({ isQuizTrap: true }, '', window.location.href);
-        };
-        blockBack();
-        
-        const onPopState = () => {
-            if (!isExiting.current) {
-                window.history.go(1);
-            }
-        };
-        window.addEventListener('popstate', onPopState);
-        return () => window.removeEventListener('popstate', onPopState);
-    }, []);
+
 
     useEffect(() => {
         fetchSetDetails();
@@ -323,9 +304,6 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
     };
 
     const handleExit = () => {
-        if (isExiting.current) return;
-        isExiting.current = true;
-        
         // Save current progress before exiting? 
         // Maybe optional, but let's just go back for now.
         // If we want to save state on exit without submitting, we'd need an API for that.
@@ -667,25 +645,7 @@ export default function SetQuestionsView({ setId, unitId, backPath }: SetQuestio
                                 console.log("[Exit Quiz] Button clicked");
                                 try { localStorage.setItem(`quiz_exited_${setId}`, '1'); } catch {}
                                 
-                                isExiting.current = true;
-                                console.log("[Exit Quiz] isExiting set to true, triggering history.back()");
-                                
-                                // Wait for the history.back() to complete (popstate event)
-                                const handlePopState = () => {
-                                    console.log("[Exit Quiz] popstate event received (back complete). Replacing route.");
-                                    window.removeEventListener('popstate', handlePopState);
-                                    router.replace(backPath || `/dashboard/units/${unitId}/sets`);
-                                };
-                                
-                                window.addEventListener('popstate', handlePopState);
-                                window.history.back();
-                                
-                                // Fallback in case popstate doesn't fire (e.g. unexpected history state)
-                                setTimeout(() => {
-                                    console.log("[Exit Quiz] Fallback timeout triggered");
-                                    window.removeEventListener('popstate', handlePopState);
-                                    router.replace(backPath || `/dashboard/units/${unitId}/sets`);
-                                }, 300);
+                                router.replace(backPath || `/dashboard/units/${unitId}/sets`);
                             }}
                         >
                             Exit Quiz

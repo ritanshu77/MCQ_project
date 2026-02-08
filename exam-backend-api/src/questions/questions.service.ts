@@ -965,7 +965,10 @@ export class QuestionsService {
         units: unitsWithSets,
       };
     } catch (error) {
-      console.log('---erri---', error);
+      this.logger.error('Error in getUnitsBySubject:', error);
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Failed to fetch units'
+      );
     }
   }
   async getQuestionsByFilters(filters: {
