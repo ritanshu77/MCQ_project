@@ -842,8 +842,18 @@ export class QuestionsService {
         subjectId: new Types.ObjectId(subjectId),
       };
 
+      let aiTitleIds: Types.ObjectId[] = [];
       if (titleId) {
         match.titleId = new Types.ObjectId(titleId);
+      } else {
+        // ✅ Exclude AI Generated titles from units/questions if no specific title requested
+        const aiTitles = await this.titleModel
+          .find({ aiGenerated: true })
+          .select('_id');
+        if (aiTitles.length > 0) {
+          aiTitleIds = aiTitles.map((t) => t._id);
+          match.titleId = { $nin: aiTitleIds };
+        }
       }
 
       const pipeline: any[] = [
@@ -929,6 +939,8 @@ export class QuestionsService {
 
               if (titleId) {
                 setQuery.titleId = new Types.ObjectId(titleId);
+              } else if (aiTitleIds.length > 0) {
+                setQuery.titleId = { $nin: aiTitleIds };
               }
 
               const sets = await this.questionSetModel
@@ -993,6 +1005,16 @@ export class QuestionsService {
     } = filters;
     const skip = (page - 1) * limit;
 
+    let aiTitleIds: Types.ObjectId[] = [];
+    if (!titleId) {
+      const aiTitles = await this.titleModel
+        .find({ aiGenerated: true })
+        .select('_id');
+      if (aiTitles.length > 0) {
+        aiTitleIds = aiTitles.map((t) => t._id);
+      }
+    }
+
     const pipeline: any[] = [
       // ⭐ 1. INITIAL MATCH - Base filters
       {
@@ -1000,6 +1022,8 @@ export class QuestionsService {
           status: 'active',
           ...(unitId && { unitId: new Types.ObjectId(unitId) }),
           ...(titleId && { titleId: new Types.ObjectId(titleId) }),
+          ...(!titleId &&
+            aiTitleIds.length > 0 && { titleId: { $nin: aiTitleIds } }),
         },
       },
 
@@ -1379,6 +1403,16 @@ export class QuestionsService {
       throw new BadRequestException(`Invalid unitId: ${unitId}`);
     }
 
+    let aiTitleIds: Types.ObjectId[] = [];
+    if (!titleId) {
+      const aiTitles = await this.titleModel
+        .find({ aiGenerated: true })
+        .select('_id');
+      if (aiTitles.length > 0) {
+        aiTitleIds = aiTitles.map((t) => t._id);
+      }
+    }
+
     // 1. Find all chapters for this unit
     const chapters = await this.chapterModel
       .find({ unitId: new ObjectId(unitId) })
@@ -1400,6 +1434,8 @@ export class QuestionsService {
         };
         if (titleId) {
           query.titleId = new ObjectId(titleId);
+        } else if (aiTitleIds.length > 0) {
+          query.titleId = { $nin: aiTitleIds };
         }
         if (activeOnly) query.isActive = true;
 
